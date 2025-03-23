@@ -1,305 +1,101 @@
 @page "/containers"
 @using MyBlazorApp.Services
-@using Blazored.LocalStorage
+@using MyBlazorApp.Models
 @inject IContainerRegistryService ContainerService
-@inject ILocalStorageService LocalStorage
 @inject NavigationManager Navigation
-@inject IJSRuntime JSRuntime
 
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3>Available Containers</h3>
-        <div class="btn-group">
-            <button class="btn btn-outline-primary" @onclick="ExportToCSV">
-                <span class="oi oi-data-transfer-download"></span> Export
-            </button>
-            <button class="btn btn-outline-danger" @onclick="BulkDelete" disabled="@(!SelectedContainers.Any())">
-                Delete Selected
-            </button>
-        </div>
-    </div>
+    <h3>Container List</h3>
 
-    <!-- Advanced Filter Panel -->
-    <div class="card mb-4 @(_showFilters ? "show" : "")">
-        <div class="card-header">
-            <button class="btn btn-link" @onclick="ToggleFilters">
-                Advanced Filters
-            </button>
+    @if (_isLoading)
+    {
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
         </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label>Date Range</label>
-                        <input type="date" class="form-control" @bind="_dateFrom" />
-                        <input type="date" class="form-control mt-2" @bind="_dateTo" />
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label>Tags</label>
-                        <input type="text" class="form-control" @bind="_tagFilter" placeholder="comma-separated tags" />
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label>Version</label>
-                        <input type="text" class="form-control" @bind="_versionFilter" />
-                    </div>
-                </div>
-            </div>
+    }
+    else if (_errorMessage != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            @_errorMessage
         </div>
-    </div>
-
-    <!-- Existing search and status filters -->
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="input-group">
-                <input type="text" class="form-control" placeholder="Search containers..." @bind-value="_searchTerm"
-                    @bind-value:event="oninput" />
-                <button class="btn btn-outline-secondary" @onclick="ApplyFilters">
-                    <span class="oi oi-magnifying-glass"></span>
-                </button>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <select class="form-select" @bind="_selectedStatus">
-                <option value="">All Statuses</option>
-                <option value="Pending">Pending</option>
-                <option value="Approved">Approved</option>
-                <option value="Rejected">Rejected</option>
-            </select>
-        </div>
-        <div class="col-md-3">
-            <select class="form-select" @bind="_sortBy">
-                <option value="name">Name</option>
-                <option value="status">Status</option>
-                <option value="date">Last Updated</option>
-            </select>
-        </div>
-    </div>
-
-    <div class="table-responsive">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>
-                        <input type="checkbox" @bind="SelectAll" />
-                    </th>
-                    <th class="sort-header" @onclick="() => SortBy(" name")">
-                        Name <span class="sort-icon">@GetSortIcon("name")</span>
-                    </th>
-                    <th class="sort-header" @onclick="() => SortBy(" status")">
-                        Status <span class="sort-icon">@GetSortIcon("status")</span>
-                    </th>
-                    <th class="sort-header" @onclick="() => SortBy(" date")">
-                        Last Updated <span class="sort-icon">@GetSortIcon("date")</span>
-                    </th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var container in GetPagedData())
-                {
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
                     <tr>
-                        <td>
-                            <input type="checkbox" @bind="@(SelectedContainers.Contains(container.RowKey))"
-                                @bind:after="() => ToggleSelection(container.RowKey)" />
-                        </td>
-                        <td>@container.RowKey</td>
-                        <td>
-                            <span class="badge @GetStatusBadgeClass(container.ApprovalStatus)">
-                                @container.ApprovalStatus
-                            </span>
-                        </td>
-                        <td>@container.LastAccessed.ToString("g")</td>
-                        <td>
-                            <button class="btn btn-sm btn-primary" @onclick="() => NavigateToDetails(container.RowKey)">
-                                Details
-                            </button>
-                        </td>
+                        <th>Name</th>
+                        <th>Status</th>
+                        <th>Last Updated</th>
+                        <th>Actions</th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-
-    <div class="pagination-container">
-        <nav>
-            <ul class="pagination">
-                @for (int i = 1; i <= TotalPages; i++)
-                {
-                    var pageNumber = i;
-                    <li class="page-item @(pageNumber == CurrentPage ? "active" : "")">
-                        <button class="page-link" @onclick="() => GoToPage(pageNumber)">@i</button>
-                    </li>
-                }
-            </ul>
-        </nav>
-    </div>
+                </thead>
+                <tbody>
+                    @if (_containers != null)
+                    {
+                        @foreach (var container in _containers)
+                        {
+                            <tr>
+                                <td>@container.RowKey</td>
+                                <td>
+                                    <span class="badge @GetStatusBadgeClass(container.ApprovalStatus)">
+                                        @container.ApprovalStatus
+                                    </span>
+                                </td>
+                                <td>@container.LastAccessed.ToString("g")</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary" @onclick="() => NavigateToDetails(container.RowKey)">
+                                        Details
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
 </div>
 
 @code {
-    private IEnumerable<ContainerMetadata>? _containers;
-    private string _searchTerm = "";
-    private string _selectedStatus = "";
-    private string _sortBy = "name";
-    private bool _sortAscending = true;
-    private int CurrentPage = 1;
-    private const int PageSize = 10;
-
-    private bool _showFilters;
-    private DateTime? _dateFrom;
-    private DateTime? _dateTo;
-    private string _tagFilter = "";
-    private string _versionFilter = "";
-    private HashSet<string> SelectedContainers = new();
+    private IEnumerable<MyBlazorApp.Models.ContainerMetadata>? _containers;
+    private bool _isLoading;
+    private string? _errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadUserPreferences();
-        await LoadContainers();
-    }
-
-    private async Task LoadUserPreferences()
-    {
-        _sortBy = await LocalStorage.GetItemAsync<string>("containerList_sortBy") ?? "name";
-        _sortAscending = await LocalStorage.GetItemAsync<bool>("containerList_sortAscending");
-        PageSize = await LocalStorage.GetItemAsync<int>("containerList_pageSize") ?? 10;
-    }
-
-    private async Task SaveUserPreferences()
-    {
-        await LocalStorage.SetItemAsync("containerList_sortBy", _sortBy);
-        await LocalStorage.SetItemAsync("containerList_sortAscending", _sortAscending);
-        await LocalStorage.SetItemAsync("containerList_pageSize", PageSize);
+        try
+        {
+            _isLoading = true;
+            await LoadContainers();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error loading containers: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
     }
 
     private async Task LoadContainers()
     {
-        _containers = await ContainerService.ListContainersAsync("approved");
-        ApplyFilters();
+        var result = await ContainerService.ListContainersAsync("approved");
+        _containers = result.Cast<MyBlazorApp.Models.ContainerMetadata>();
     }
 
-    private IEnumerable<ContainerMetadata> GetPagedData()
+    private string GetStatusBadgeClass(string status) => status switch
     {
-        if (_containers == null) return Array.Empty<ContainerMetadata>();
+        "Approved" => "bg-success",
+        "Pending" => "bg-warning",
+        "Rejected" => "bg-danger",
+        _ => "bg-secondary"
+    };
 
-        var filtered = _containers
-        .Where(c => (string.IsNullOrEmpty(_searchTerm) ||
-        c.RowKey.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase)) &&
-        (string.IsNullOrEmpty(_selectedStatus) ||
-        c.ApprovalStatus == _selectedStatus));
-
-        filtered = ApplyAdvancedFilters(filtered);
-
-        var sorted = _sortBy switch
-        {
-            "name" => _sortAscending ? filtered.OrderBy(c => c.RowKey) : filtered.OrderByDescending(c => c.RowKey),
-            "status" => _sortAscending ? filtered.OrderBy(c => c.ApprovalStatus) : filtered.OrderByDescending(c =>
-            c.ApprovalStatus),
-            "date" => _sortAscending ? filtered.OrderBy(c => c.LastAccessed) : filtered.OrderByDescending(c => c.LastAccessed),
-            _ => filtered
-        };
-
-        return sorted
-        .Skip((CurrentPage - 1) * PageSize)
-        .Take(PageSize);
-    }
-
-    private IEnumerable<ContainerMetadata> ApplyAdvancedFilters(IEnumerable<ContainerMetadata> containers)
+    private void NavigateToDetails(string containerName)
     {
-        return containers
-        .Where(c => (!_dateFrom.HasValue || c.LastAccessed >= _dateFrom)
-        && (!_dateTo.HasValue || c.LastAccessed <= _dateTo)
-        && (string.IsNullOrEmpty(_tagFilter) || c.Tags.Split(',').Any(t => _tagFilter.Contains(t)))
-        && (string.IsNullOrEmpty(_versionFilter) || c.Version.Contains(_versionFilter)));
+        Navigation.NavigateTo($"/containers/{containerName}");
     }
-
-    private async Task ExportToCSV()
-    {
-        var exportData = GetPagedData().Select(c => new
-        {
-            c.RowKey,
-            c.ApprovalStatus,
-            c.LastAccessed,
-            c.Version,
-            c.Tags
-        });
-
-        using var ms = new MemoryStream();
-        using var writer = new StreamWriter(ms);
-        using var csv = new CsvHelper.CsvWriter(writer, System.Globalization.CultureInfo.InvariantCulture);
-
-        await csv.WriteRecordsAsync(exportData);
-        await writer.FlushAsync();
-
-        var bytes = ms.ToArray();
-        await JSRuntime.InvokeVoidAsync("downloadFile", "containers.csv", Convert.ToBase64String(bytes));
-    }
-
-    private bool SelectAll
-    {
-        get => GetPagedData().All(c => SelectedContainers.Contains(c.RowKey));
-        set
-        {
-            var containers = GetPagedData();
-            if (value)
-                SelectedContainers.UnionWith(containers.Select(c => c.RowKey));
-            else
-                SelectedContainers.ExceptWith(containers.Select(c => c.RowKey));
-        }
-    }
-
-    private void ToggleSelection(string containerName)
-    {
-        if (SelectedContainers.Contains(containerName))
-            SelectedContainers.Remove(containerName);
-        else
-            SelectedContainers.Add(containerName);
-    }
-
-    private async Task BulkDelete()
-    {
-        if (await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete selected containers?"))
-        {
-            foreach (var containerName in SelectedContainers)
-            {
-                await ContainerService.DeleteContainerAsync("approved", containerName);
-            }
-            SelectedContainers.Clear();
-            await LoadContainers();
-        }
-    }
-
-    private void ToggleFilters()
-    {
-        _showFilters = !_showFilters;
-    }
-
-    private int TotalPages =>
-    _containers == null ? 1 : (int)Math.Ceiling(_containers.Count() / (double)PageSize);
-
-    private void GoToPage(int page)
-    {
-        CurrentPage = page;
-        StateHasChanged();
-    }
-
-    private void SortBy(string column)
-    {
-        if (_sortBy == column)
-        {
-            _sortAscending = !_sortAscending;
-        }
-        else
-        {
-            _sortBy = column;
-            _sortAscending = true;
-        }
-        StateHasChanged();
-    }
-
-    private string GetSortIcon(string column) =>
-    _sortBy != column ? "↕" : _sortAscending ? "↑" : "↓";
 }
