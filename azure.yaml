@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: arch-capstone
+metadata:
+    template: azd-init@1.13.1
+services:
+    my-blazor-app:
+        project: MyBlazorApp
+        host: containerapp
+        language: dotnet

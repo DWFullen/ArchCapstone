@@ -1,0 +1,18 @@
+Azure Developer CLI (azd) Installation Troubleshooting Steps
+Verified Windows Version
+
+Checked App Installer
+
+Verified Winget
+
+Attempted Azure Developer CLI Installation
+
+Alternative Installation Method
+
+Downloaded MSI installer from https://aka.ms/install-azd-windows
+Installed manually through the MSI
+Required VS Code restart
+Final Setup
+
+Each step helped verify and resolve dependencies needed for the Azure Developer CLI to work properly on your system.
+
