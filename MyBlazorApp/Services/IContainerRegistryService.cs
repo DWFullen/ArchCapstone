@@ -1,3 +1,5 @@
+namespace MyBlazorApp.Services;
+
 public interface IContainerRegistryService
 {
     Task<ContainerMetadata> GetContainerAsync(string containerType, string containerName);

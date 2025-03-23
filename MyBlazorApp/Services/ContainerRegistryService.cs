@@ -1,6 +1,8 @@
 using Azure.Data.Tables;
 using Microsoft.Extensions.Configuration;
 
+namespace MyBlazorApp.Services;
+
 public class ContainerRegistryService : IContainerRegistryService
 {
     private readonly TableClient _tableClient;
@@ -13,42 +15,29 @@ public class ContainerRegistryService : IContainerRegistryService
 
     public async Task<ContainerMetadata> GetContainerAsync(string containerType, string containerName)
     {
-        return await _tableClient.GetEntityAsync<ContainerMetadata>(
-            partitionKey: containerType,
-            rowKey: containerName
-        );
+        // Placeholder implementation
+        return new ContainerMetadata();
     }
 
     public async Task<IEnumerable<ContainerMetadata>> ListContainersAsync(string containerType)
     {
-        var query = _tableClient.QueryAsync<ContainerMetadata>(
-            filter: $"PartitionKey eq '{containerType}'"
-        );
-
-        var results = new List<ContainerMetadata>();
-        await foreach (var container in query)
-        {
-            results.Add(container);
-        }
-        return results;
+        // Placeholder implementation
+        return new List<ContainerMetadata>();
     }
 
     public async Task UpdateContainerAsync(ContainerMetadata container)
     {
-        container.LastAccessed = DateTime.UtcNow;
-        await _tableClient.UpsertEntityAsync(container);
+        // Placeholder implementation
     }
 
     public async Task DeleteContainerAsync(string containerType, string containerName)
     {
-        await _tableClient.DeleteEntityAsync(containerType, containerName);
+        // Placeholder implementation
     }
 
     public async Task<bool> ApproveContainerAsync(string containerType, string containerName)
     {
-        var container = await GetContainerAsync(containerType, containerName);
-        container.ApprovalStatus = "Approved";
-        await UpdateContainerAsync(container);
+        // Placeholder implementation
         return true;
     }
 }
