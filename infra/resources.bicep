@@ -4,7 +4,6 @@ param location string = resourceGroup().location
 @description('Tags that will be applied to all resources')
 param tags object = {}
 
-
 param myBlazorAppExists bool
 @secure()
 param myBlazorAppDefinition object
@@ -35,11 +34,14 @@ module containerRegistry 'br/public:avm/res/container-registry/registry:0.1.1' =
     location: location
     tags: tags
     publicNetworkAccess: 'Enabled'
-    roleAssignments:[
+    roleAssignments: [
       {
         principalId: myBlazorAppIdentity.outputs.principalId
         principalType: 'ServicePrincipal'
-        roleDefinitionIdOrName: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')
+        roleDefinitionIdOrName: subscriptionResourceId(
+          'Microsoft.Authorization/roleDefinitions',
+          '7f951dda-4ed3-4680-a7ca-43fe172d538d'
+        )
       }
     ]
   }
@@ -91,12 +93,13 @@ module myBlazorApp 'br/public:avm/res/app/container-app:0.8.0' = {
     scaleMinReplicas: 0
     scaleMaxReplicas: 10
     secrets: {
-      secureList:  union([
-      ],
-      map(myBlazorAppSecrets, secret => {
-        name: secret.secretRef
-        value: secret.value
-      }))
+      secureList: union(
+        [],
+        map(myBlazorAppSecrets, secret => {
+          name: secret.secretRef
+          value: secret.value
+        })
+      )
     }
     containers: [
       {
@@ -106,32 +109,34 @@ module myBlazorApp 'br/public:avm/res/app/container-app:0.8.0' = {
           cpu: json('0.5')
           memory: '1.0Gi'
         }
-        env: union([
-          {
-            name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-            value: monitoring.outputs.applicationInsightsConnectionString
-          }
-          {
-            name: 'AZURE_CLIENT_ID'
-            value: myBlazorAppIdentity.outputs.clientId
-          }
-          {
-            name: 'PORT'
-            value: '8080'
-          }
-        ],
-        myBlazorAppEnv,
-        map(myBlazorAppSecrets, secret => {
+        env: union(
+          [
+            {
+              name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+              value: monitoring.outputs.applicationInsightsConnectionString
+            }
+            {
+              name: 'AZURE_CLIENT_ID'
+              value: myBlazorAppIdentity.outputs.clientId
+            }
+            {
+              name: 'PORT'
+              value: '8080'
+            }
+          ],
+          myBlazorAppEnv,
+          map(myBlazorAppSecrets, secret => {
             name: secret.name
             secretRef: secret.secretRef
-        }))
+          })
+        )
       }
     ]
-    managedIdentities:{
+    managedIdentities: {
       systemAssigned: false
       userAssignedResourceIds: [myBlazorAppIdentity.outputs.resourceId]
     }
-    registries:[
+    registries: [
       {
         server: containerRegistry.outputs.loginServer
         identity: myBlazorAppIdentity.outputs.resourceId
