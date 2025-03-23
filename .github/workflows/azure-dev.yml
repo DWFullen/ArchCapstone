@@ -6,6 +6,11 @@ on:
     # Set this to the mainline branch you are using
     branches:
       - main
+  # Run when a pull request is opened or updated against the mainline branch
+  # Set this to the mainline branch you are using
+  pull_request:
+    branches:
+      - main
 
 # Set up permissions for deploying with secretless Azure federated credentials
 # https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-portal%2Clinux#set-up-azure-login-with-openid-connect-authentication
