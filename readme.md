@@ -76,7 +76,11 @@
   - [Leveraging containers and orchestrators](https://learn.microsoft.com/en-us/dotnet/architecture/cloud-native/leverage-containers-orchestrators)
 
 ---
+# Azure Cost Estimation
 
+![Cost Estimation](docs/CostEstimation.png)
+
+---
 # Azure Well-Architected Framework Review
 
 ## 1. Reliability

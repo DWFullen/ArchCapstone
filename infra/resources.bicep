@@ -106,7 +106,7 @@ module myBlazorApp 'br/public:avm/res/app/container-app:0.8.0' = {
     name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.appContainerApps}'
     ingressTargetPort: 8080
     scaleMinReplicas: 0
-    scaleMaxReplicas: 10
+    scaleMaxReplicas: 1
     secrets: {
       secureList: union(
         [],
