@@ -13,7 +13,6 @@ permissions:
   id-token: write
   contents: read
 
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,6 +22,19 @@ jobs:
       AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
       AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
       AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+      APPLICATION_NAME: ${{ vars.APPLICATION_NAME }}
+      APPLICATION_VERSION: ${{ vars.APPLICATION_VERSION }}
+      AZD_PIPELINE_PROVIDER: ${{ vars.AZD_PIPELINE_PROVIDER }}
+      AZURE_CONTAINER_REGISTRY_ENDPOINT: ${{ vars.AZURE_CONTAINER_REGISTRY_ENDPOINT }}
+      AZURE_DEV_ENVIRONMENT_NAME: ${{ vars.AZURE_DEV_ENVIRONMENT_NAME }}
+      AZURE_PIPELINE_CLIENT_ID: ${{ vars.AZURE_PIPELINE_CLIENT_ID }}
+      AZURE_PROD_ENVIRONMENT_NAME: ${{ vars.AZURE_PROD_ENVIRONMENT_NAME }}
+      AZURE_RESOURCE_MY_BLAZOR_APP_ID: ${{ vars.AZURE_RESOURCE_MY_BLAZOR_APP_ID }}
+      AZURE_SUBSCRIPTION: ${{ vars.AZURE_SUBSCRIPTION }}
+      AZURE_UAT_ENVIRONMENT_NAME: ${{ vars.AZURE_UAT_ENVIRONMENT_NAME }}
+      AZURE_Z_LOCATION: ${{ vars.AZURE_Z_LOCATION }}
+      SERVICE_MY_BLAZOR_APP_IMAGE_NAME: ${{ vars.SERVICE_MY_BLAZOR_APP_IMAGE_NAME }}
+      SERVICE_MY_BLAZOR_APP_RESOURCE_EXISTS: ${{ vars.SERVICE_MY_BLAZOR_APP_RESOURCE_EXISTS }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,7 +47,6 @@ jobs:
             --federated-credential-provider "github" `
             --tenant-id "$Env:AZURE_TENANT_ID"
         shell: pwsh
-
 
       - name: Provision Infrastructure
         run: azd provision --no-prompt
