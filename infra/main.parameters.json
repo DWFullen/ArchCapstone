@@ -32,6 +32,27 @@
       },
       "principalId": {
         "value": "${AZURE_PRINCIPAL_ID}"
+      },
+      "devEnvironmentName": {
+        "value": "${AZURE_DEV_ENVIRONMENT_NAME}"
+      },
+      "uatEnvironmentName": {
+        "value": "${AZURE_UAT_ENVIRONMENT_NAME}"
+      },
+      "prodEnvironmentName": {
+        "value": "${AZURE_PROD_ENVIRONMENT_NAME}"
+      },
+      "zLocation": {
+        "value": "${AZURE_Z_LOCATION}"
+      },
+      "applicationName": {
+        "value": "${APPLICATION_NAME}"
+      },
+      "applicationVersion": {
+        "value": "${APPLICATION_VERSION}"
+      },
+      "azureSubscription": {
+        "value": "${AZURE_SUBSCRIPTION}"
       }
     }
 }

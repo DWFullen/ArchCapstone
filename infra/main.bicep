@@ -9,6 +9,21 @@ param environmentName string
 @description('Primary location for all resources')
 param location string
 
+@description('Location code for Azure region (e.g., zus1 for East US 1)')
+param zLocation string
+
+@description('Short name or code for Azure subscription')
+param azureSubscription string
+
+@description('Application name for resource naming')
+param applicationName string
+
+@description('Environment name for resource naming (e.g., dev, uat, prod)')
+param devEnvironmentName string
+
+@description('Application version for resource naming')
+param applicationVersion string
+
 param myBlazorAppExists bool
 @secure()
 param myBlazorAppDefinition object
@@ -21,13 +36,15 @@ param principalId string
 // Note that 'azd-service-name' tags should be applied separately to service host resources.
 // Example usage:
 //   tags: union(tags, { 'azd-service-name': <service name in azure.yaml> })
+//
+// Reminder: Review deploymentInstructions.md for automation and naming guidance to avoid breaking azd automation.
 var tags = {
   'azd-env-name': environmentName
 }
 
 // Organize resources in a resource group
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
-  name: 'rg-${environmentName}'
+  name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-rg'
   location: location
   tags: tags
 }
@@ -41,6 +58,11 @@ module resources 'resources.bicep' = {
     principalId: principalId
     myBlazorAppExists: myBlazorAppExists
     myBlazorAppDefinition: myBlazorAppDefinition
+    applicationName: applicationName
+    applicationVersion: applicationVersion
+    azureSubscription: azureSubscription
+    devEnvironmentName: devEnvironmentName
+    zLocation: zLocation
   }
 }
 
