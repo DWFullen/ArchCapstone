@@ -1,5 +1,5 @@
 # Azure Infrastructure for Containerized Applications
-![Architecture Diagram](.\docs\zus1-rc-rcwebsite-dev-v1-rg.png)
+![Architecture Diagram](docs\zus1-rc-rcwebsite-dev-v1-rg.png)
 ## 1. Core Components
 
 ### **Container Registry**
