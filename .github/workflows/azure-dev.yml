@@ -16,6 +16,9 @@ permissions:
 jobs:
   deploy-dev:
     runs-on: ubuntu-latest
+    environment:
+      name: development
+      url: https://example.com/dev-approval
     env:
       AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
       AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
@@ -68,6 +71,9 @@ jobs:
   deploy-prod:
     needs: deploy-dev
     runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://example.com/prod-approval
     env:
       AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
       AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
