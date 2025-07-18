@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
       "environmentName": {
-        "value": "${AZURE_ENV_NAME}"
+        "value": "${github.ref == 'refs/heads/main' && AZURE_PROD_ENVIRONMENT_NAME || AZURE_DEV_ENVIRONMENT_NAME}"
       },
       "location": {
         "value": "${AZURE_LOCATION}"
