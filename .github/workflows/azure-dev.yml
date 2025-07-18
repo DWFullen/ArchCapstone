@@ -55,7 +55,8 @@ jobs:
           azd provision --no-prompt
         env:
           AZD_INITIAL_ENVIRONMENT_CONFIG: ${{ secrets.AZD_INITIAL_ENVIRONMENT_CONFIG }}
-          ENVIRONMENT_NAME: ${{ github.ref == 'refs/heads/main' && vars.AZURE_PROD_ENVIRONMENT_NAME || vars.AZURE_DEV_ENVIRONMENT_NAME }}
+          ENVIRONMENT_NAME: ${{ vars.AZURE_DEV_ENVIRONMENT_NAME }}
+          environmentName: ${{ vars.AZURE_DEV_ENVIRONMENT_NAME }}
       - name: Set Resource Group for Deployment
         run: |
           echo "AZURE_RESOURCE_GROUP=$(az group show --name ${AZURE_Z_LOCATION}-${AZURE_SUBSCRIPTION}-${APPLICATION_NAME}-${ENVIRONMENT_NAME}-${APPLICATION_VERSION}-rg --query name -o tsv)" >> $GITHUB_ENV
