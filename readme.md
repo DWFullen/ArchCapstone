@@ -78,7 +78,7 @@
 ---
 # Azure Cost Estimation
 
-![Cost Estimation](docs/costestimation.png)
+![Cost Estimation](./docs/costestimation.png)
 
 ---
 # Azure Well-Architected Framework Review
