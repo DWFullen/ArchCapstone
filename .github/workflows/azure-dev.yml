@@ -34,6 +34,7 @@ jobs:
       AZURE_Z_LOCATION: ${{ vars.AZURE_Z_LOCATION }}
       SERVICE_MY_BLAZOR_APP_IMAGE_NAME: ${{ vars.SERVICE_MY_BLAZOR_APP_IMAGE_NAME }}
       SERVICE_MY_BLAZOR_APP_RESOURCE_EXISTS: ${{ vars.SERVICE_MY_BLAZOR_APP_RESOURCE_EXISTS }}
+      ENVIRONMENT_NAME: ${{ github.ref == 'refs/heads/main' && vars.AZURE_PROD_ENVIRONMENT_NAME || vars.AZURE_DEV_ENVIRONMENT_NAME }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -50,6 +51,7 @@ jobs:
         run: azd provision --no-prompt
         env:
           AZD_INITIAL_ENVIRONMENT_CONFIG: ${{ secrets.AZD_INITIAL_ENVIRONMENT_CONFIG }}
+          ENVIRONMENT_NAME: ${{ github.ref == 'refs/heads/main' && vars.AZURE_PROD_ENVIRONMENT_NAME || vars.AZURE_DEV_ENVIRONMENT_NAME }}
       - name: Deploy Application
         run: azd deploy --no-prompt
 
@@ -75,6 +77,7 @@ jobs:
       AZURE_Z_LOCATION: ${{ vars.AZURE_Z_LOCATION }}
       SERVICE_MY_BLAZOR_APP_IMAGE_NAME: ${{ vars.SERVICE_MY_BLAZOR_APP_IMAGE_NAME }}
       SERVICE_MY_BLAZOR_APP_RESOURCE_EXISTS: ${{ vars.SERVICE_MY_BLAZOR_APP_RESOURCE_EXISTS }}
+      ENVIRONMENT_NAME: ${{ github.ref == 'refs/heads/main' && vars.AZURE_PROD_ENVIRONMENT_NAME || vars.AZURE_DEV_ENVIRONMENT_NAME }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -91,5 +94,6 @@ jobs:
         run: azd provision --no-prompt
         env:
           AZD_INITIAL_ENVIRONMENT_CONFIG: ${{ secrets.AZD_INITIAL_ENVIRONMENT_CONFIG }}
+          ENVIRONMENT_NAME: ${{ github.ref == 'refs/heads/main' && vars.AZURE_PROD_ENVIRONMENT_NAME || vars.AZURE_DEV_ENVIRONMENT_NAME }}
       - name: Deploy Application
         run: azd deploy --no-prompt
