@@ -84,6 +84,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Create Pull Request to Main
+        uses: peter-evans/create-pull-request@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
+          commit-message: "Merge changes from dev to main for production deployment"
+          title: "Production Deployment"
+          body: "This pull request merges changes from dev to main to trigger the production deployment pipeline."
       - name: Install azd
         uses: Azure/setup-azd@v2
       - name: Log in with Azure (Federated Credentials)
