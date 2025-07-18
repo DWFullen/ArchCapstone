@@ -28,6 +28,14 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
+[F:/Documents/GettingGood/Azure Projects/ArchCapstone/MyBlazorApp/Pages/Containers/ContainerDetail.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ29udGFpbmVyc1xDb250YWluZXJEZXRhaWwucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/Documents/GettingGood/Azure Projects/ArchCapstone/MyBlazorApp/Pages/Containers/ContainerList.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ29udGFpbmVyc1xDb250YWluZXJMaXN0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
 [F:/Documents/GettingGood/Azure Projects/ArchCapstone/MyBlazorApp/Pages/Counter.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ291bnRlci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
@@ -38,6 +46,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [F:/Documents/GettingGood/Azure Projects/ArchCapstone/MyBlazorApp/Pages/Weather.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcV2VhdGhlci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/Documents/GettingGood/Azure Projects/ArchCapstone/MyBlazorApp/Shared/NavMenu.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE5hdk1lbnUucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [F:/Documents/GettingGood/Azure Projects/ArchCapstone/MyBlazorApp/_Imports.razor]

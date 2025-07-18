@@ -164,3 +164,39 @@ module myBlazorApp 'br/public:avm/res/app/container-app:0.8.0' = {
 }
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = containerRegistry.outputs.loginServer
 output AZURE_RESOURCE_MY_BLAZOR_APP_ID string = myBlazorApp.outputs.resourceId
+
+// Add after existing modules
+module containerStorage 'br/public:avm/res/storage/storage-account:0.3.1' = {
+  name: 'container-storage'
+  params: {
+    name: '${abbrs.storageStorageAccounts}containers${resourceToken}'
+    location: location
+    tags: tags
+    sku: {
+      name: 'Standard_LRS'
+    }
+    containers: [
+      {
+        name: 'container-images'
+        publicAccess: 'None'
+      }
+      {
+        name: 'access-logs'
+        publicAccess: 'None'
+      }
+    ]
+    tables: [
+      {
+        name: 'ContainerRegistry'
+      }
+    ]
+    roleAssignments: [
+      {
+        principalId: myBlazorAppIdentity.outputs.principalId
+        roleDefinitionIdOrName: 'Storage Blob Data Contributor'
+      }
+    ]
+  }
+}
+
+output STORAGE_ACCOUNT_NAME string = containerStorage.outputs.name

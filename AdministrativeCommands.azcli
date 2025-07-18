@@ -1,0 +1,86 @@
+// Description: Administrative commands for Azure CLI
+#--------------------Azure Developer CLI (azd) Commands--------------------
+# Check azd version
+azd version
+
+# Initialize project
+azd init
+
+# Deploy infrastructure and application
+azd up
+
+# Deploy only infrastructure
+azd provision
+
+# Deploy only application
+azd deploy
+
+# Configure pipeline
+azd pipeline config
+
+#--------------------Docker Commands--------------------
+# List all containers
+docker ps -a
+
+# Stop container
+docker stop <container_id>
+
+# Remove container
+docker rm <container_id>
+
+# Build image
+docker build -t myblazorapp:latest .
+
+# Run container
+docker run -d -p 80:80 myblazorapp:latest
+
+# View logs
+docker logs <container_id>
+
+#--------------------AZ CLI--------------------
+# Login to Azure
+az login
+
+# List subscriptions
+az account list
+
+# Set subscription
+az account set --subscription <subscription_id>
+
+# List resource groups
+az group list
+
+# List container registries
+az acr list
+
+#--------------------Kubernetes--------------------
+# Get cluster credentials
+az aks get-credentials --resource-group <resource-group> --name <cluster-name>
+
+# List nodes
+kubectl get nodes
+
+# List pods
+kubectl get pods
+
+# View pod logs
+kubectl logs <pod-name>
+
+# Describe pod
+kubectl describe pod <pod-name>
+
+#--------------------Testing--------------------
+# Run .NET tests
+dotnet test
+
+# Run specific test
+dotnet test --filter "FullyQualifiedName=<test_name>"
+
+# Run tests with coverage
+dotnet test /p:CollectCoverage=true
+
+# Build solution
+dotnet build
+
+# Clean solution
+dotnet clean
