@@ -56,8 +56,20 @@ jobs:
         env:
           AZD_INITIAL_ENVIRONMENT_CONFIG: ${{ secrets.AZD_INITIAL_ENVIRONMENT_CONFIG }}
           ENVIRONMENT_NAME: ${{ github.ref == 'refs/heads/main' && vars.AZURE_PROD_ENVIRONMENT_NAME || vars.AZURE_DEV_ENVIRONMENT_NAME }}
+      - name: Set Resource Group for Deployment
+        run: |
+          echo "AZURE_RESOURCE_GROUP=$(az group show --name ${AZURE_Z_LOCATION}-${AZURE_SUBSCRIPTION}-${APPLICATION_NAME}-${ENVIRONMENT_NAME}-${APPLICATION_VERSION}-rg --query name -o tsv)" >> $GITHUB_ENV
+        env:
+          AZURE_Z_LOCATION: ${{ vars.AZURE_Z_LOCATION }}
+          AZURE_SUBSCRIPTION: ${{ vars.AZURE_SUBSCRIPTION }}
+          APPLICATION_NAME: ${{ vars.APPLICATION_NAME }}
+          ENVIRONMENT_NAME: ${{ vars.AZURE_PROD_ENVIRONMENT_NAME }}
+          APPLICATION_VERSION: ${{ vars.APPLICATION_VERSION }}
+
       - name: Deploy Application
         run: azd deploy --no-prompt
+        env:
+          AZURE_RESOURCE_GROUP: ${{ env.AZURE_RESOURCE_GROUP }}
 
   deploy-prod:
     needs: deploy-dev
