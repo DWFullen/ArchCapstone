@@ -44,7 +44,7 @@ var tags = {
 
 // Organize resources in a resource group
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
-  name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-rg'
+  name: '${zLocation}-${azureSubscription}-${applicationName}-${environmentName}-${applicationVersion}-rg'
   location: location
   tags: tags
 }
