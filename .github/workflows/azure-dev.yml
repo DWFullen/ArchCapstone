@@ -120,4 +120,4 @@ jobs:
       - name: Deploy Application
         run: azd deploy --no-prompt
         env:
-          AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+          AZURE_RESOURCE_GROUP: ${{ env.AZURE_RESOURCE_GROUP }}
