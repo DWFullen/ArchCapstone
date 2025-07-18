@@ -42,8 +42,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Install azd
         uses: Azure/setup-azd@v2
-      - name: Set azd environment to production
-        run: azd env set --environment production
+      - name: Set azd environment to development
+        run: azd env set --environment development
 
       - name: Log in with Azure (Federated Credentials)
         run: |
