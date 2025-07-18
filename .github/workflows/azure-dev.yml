@@ -1,16 +1,10 @@
-# Run when commits are pushed to main
+# Run on pushes to dev or main, and on manual dispatch
+
 on:
-  workflow_dispatch:
   push:
-    # Run when commits are pushed to mainline branch (main or master)
-    # Set this to the mainline branch you are using
     branches:
-      - main
-  # Run when a pull request is opened or updated against the mainline branch
-  # Set this to the mainline branch you are using
-  pull_request:
-    branches:
-      - main
+      - dev
+  workflow_dispatch:
 
 # Set up permissions for deploying with secretless Azure federated credentials
 # https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-portal%2Clinux#set-up-azure-login-with-openid-connect-authentication
@@ -18,16 +12,28 @@ permissions:
   id-token: write
   contents: read
 
-
 jobs:
-  build:
+  deploy-dev:
     runs-on: ubuntu-latest
+    environment: development
     env:
       AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
       AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
       AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
       AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+      APPLICATION_NAME: ${{ vars.APPLICATION_NAME }}
+      APPLICATION_VERSION: ${{ vars.APPLICATION_VERSION }}
+      AZD_PIPELINE_PROVIDER: ${{ vars.AZD_PIPELINE_PROVIDER }}
+      AZURE_CONTAINER_REGISTRY_ENDPOINT: ${{ vars.AZURE_CONTAINER_REGISTRY_ENDPOINT }}
+      AZURE_DEV_ENVIRONMENT_NAME: ${{ vars.AZURE_DEV_ENVIRONMENT_NAME }}
+      AZURE_PIPELINE_CLIENT_ID: ${{ vars.AZURE_PIPELINE_CLIENT_ID }}
+      AZURE_RESOURCE_MY_BLAZOR_APP_ID: ${{ vars.AZURE_RESOURCE_MY_BLAZOR_APP_ID }}
+      AZURE_SUBSCRIPTION: ${{ vars.AZURE_SUBSCRIPTION }}
+      AZURE_UAT_ENVIRONMENT_NAME: ${{ vars.AZURE_UAT_ENVIRONMENT_NAME }}
+      AZURE_Z_LOCATION: ${{ vars.AZURE_Z_LOCATION }}
+      SERVICE_MY_BLAZOR_APP_IMAGE_NAME: ${{ vars.SERVICE_MY_BLAZOR_APP_IMAGE_NAME }}
+      SERVICE_MY_BLAZOR_APP_RESOURCE_EXISTS: ${{ vars.SERVICE_MY_BLAZOR_APP_RESOURCE_EXISTS }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,12 +46,50 @@ jobs:
             --federated-credential-provider "github" `
             --tenant-id "$Env:AZURE_TENANT_ID"
         shell: pwsh
-
-
       - name: Provision Infrastructure
         run: azd provision --no-prompt
         env:
           AZD_INITIAL_ENVIRONMENT_CONFIG: ${{ secrets.AZD_INITIAL_ENVIRONMENT_CONFIG }}
+      - name: Deploy Application
+        run: azd deploy --no-prompt
 
+  deploy-prod:
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+      APPLICATION_NAME: ${{ vars.APPLICATION_NAME }}
+      APPLICATION_VERSION: ${{ vars.APPLICATION_VERSION }}
+      AZD_PIPELINE_PROVIDER: ${{ vars.AZD_PIPELINE_PROVIDER }}
+      AZURE_CONTAINER_REGISTRY_ENDPOINT: ${{ vars.AZURE_CONTAINER_REGISTRY_ENDPOINT }}
+      AZURE_PROD_ENVIRONMENT_NAME: ${{ vars.AZURE_PROD_ENVIRONMENT_NAME }}
+      AZURE_PIPELINE_CLIENT_ID: ${{ vars.AZURE_PIPELINE_CLIENT_ID }}
+      AZURE_RESOURCE_MY_BLAZOR_APP_ID: ${{ vars.AZURE_RESOURCE_MY_BLAZOR_APP_ID }}
+      AZURE_SUBSCRIPTION: ${{ vars.AZURE_SUBSCRIPTION }}
+      AZURE_UAT_ENVIRONMENT_NAME: ${{ vars.AZURE_UAT_ENVIRONMENT_NAME }}
+      AZURE_Z_LOCATION: ${{ vars.AZURE_Z_LOCATION }}
+      SERVICE_MY_BLAZOR_APP_IMAGE_NAME: ${{ vars.SERVICE_MY_BLAZOR_APP_IMAGE_NAME }}
+      SERVICE_MY_BLAZOR_APP_RESOURCE_EXISTS: ${{ vars.SERVICE_MY_BLAZOR_APP_RESOURCE_EXISTS }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install azd
+        uses: Azure/setup-azd@v2
+      - name: Log in with Azure (Federated Credentials)
+        run: |
+          azd auth login `
+            --client-id "$Env:AZURE_CLIENT_ID" `
+            --federated-credential-provider "github" `
+            --tenant-id "$Env:AZURE_TENANT_ID"
+        shell: pwsh
+      - name: Provision Infrastructure
+        run: azd provision --no-prompt
+        env:
+          AZD_INITIAL_ENVIRONMENT_CONFIG: ${{ secrets.AZD_INITIAL_ENVIRONMENT_CONFIG }}
       - name: Deploy Application
         run: azd deploy --no-prompt

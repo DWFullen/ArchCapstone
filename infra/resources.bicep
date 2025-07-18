@@ -4,6 +4,21 @@ param location string = resourceGroup().location
 @description('Tags that will be applied to all resources')
 param tags object = {}
 
+@description('Location code for Azure region (e.g., zus1 for East US 1)')
+param zLocation string
+
+@description('Short name or code for Azure subscription')
+param azureSubscription string
+
+@description('Application name for resource naming')
+param applicationName string
+
+@description('Environment name for resource naming (e.g., dev, uat, prod)')
+param devEnvironmentName string
+
+@description('Application version for resource naming')
+param applicationVersion string
+
 param myBlazorAppExists bool
 @secure()
 param myBlazorAppDefinition object
@@ -18,9 +33,9 @@ var resourceToken = uniqueString(subscription().id, resourceGroup().id, location
 module monitoring 'br/public:avm/ptn/azd/monitoring:0.1.0' = {
   name: 'monitoring'
   params: {
-    logAnalyticsName: '${abbrs.operationalInsightsWorkspaces}${resourceToken}'
-    applicationInsightsName: '${abbrs.insightsComponents}${resourceToken}'
-    applicationInsightsDashboardName: '${abbrs.portalDashboards}${resourceToken}'
+    logAnalyticsName: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.operationalInsightsWorkspaces}'
+    applicationInsightsName: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.insightsComponents}'
+    applicationInsightsDashboardName: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.portalDashboards}'
     location: location
     tags: tags
   }
@@ -30,7 +45,7 @@ module monitoring 'br/public:avm/ptn/azd/monitoring:0.1.0' = {
 module containerRegistry 'br/public:avm/res/container-registry/registry:0.1.1' = {
   name: 'registry'
   params: {
-    name: '${abbrs.containerRegistryRegistries}${resourceToken}'
+    name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.containerRegistryRegistries}'
     location: location
     tags: tags
     publicNetworkAccess: 'Enabled'
@@ -52,7 +67,7 @@ module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.4.5
   name: 'container-apps-environment'
   params: {
     logAnalyticsWorkspaceResourceId: monitoring.outputs.logAnalyticsWorkspaceResourceId
-    name: '${abbrs.appManagedEnvironments}${resourceToken}'
+    name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.appManagedEnvironments}'
     location: location
     zoneRedundant: false
   }
@@ -61,16 +76,16 @@ module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.4.5
 module myBlazorAppIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.2.1' = {
   name: 'myBlazorAppidentity'
   params: {
-    name: '${abbrs.managedIdentityUserAssignedIdentities}myBlazorApp-${resourceToken}'
+    name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.managedIdentityUserAssignedIdentities}'
     location: location
   }
 }
 
 module myBlazorAppFetchLatestImage './modules/fetch-container-image.bicep' = {
-  name: 'myBlazorApp-fetch-image'
+  name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.containerAppImages}'
   params: {
     exists: myBlazorAppExists
-    name: 'my-blazor-app'
+    name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.appContainerApps}'
   }
 }
 
@@ -86,12 +101,12 @@ var myBlazorAppEnv = map(filter(myBlazorAppAppSettingsArray, i => i.?secret == n
 })
 
 module myBlazorApp 'br/public:avm/res/app/container-app:0.8.0' = {
-  name: 'myBlazorApp'
+  name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.appContainerApps}'
   params: {
-    name: 'my-blazor-app'
+    name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.appContainerApps}'
     ingressTargetPort: 8080
     scaleMinReplicas: 0
-    scaleMaxReplicas: 10
+    scaleMaxReplicas: 1
     secrets: {
       secureList: union(
         [],
