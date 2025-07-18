@@ -4,6 +4,7 @@ targetScope = 'subscription'
 @maxLength(64)
 @description('Name of the environment that can be used as part of naming resource convention')
 param environmentName string
+param azdEnvName string
 
 @minLength(1)
 @description('Primary location for all resources')
@@ -39,7 +40,7 @@ param principalId string
 //
 // Reminder: Review deploymentInstructions.md for automation and naming guidance to avoid breaking azd automation.
 var tags = {
-  'azd-env-name': environmentName
+  'azd-env-name': azdEnvName
 }
 
 // Organize resources in a resource group
