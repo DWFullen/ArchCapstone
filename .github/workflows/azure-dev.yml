@@ -57,6 +57,7 @@ jobs:
         run: azd deploy --no-prompt
 
   deploy-prod:
+    if: github.ref == 'refs/heads/main'
     needs: deploy-dev
     runs-on: ubuntu-latest
     environment: production
