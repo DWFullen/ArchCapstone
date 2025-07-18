@@ -1,0 +1,9 @@
+az container logs show --container-name 'zus1-rc-rcwebsite-dev-v1-ca' --resource-group 'zus1-rc-rcwebsite-dev-v1-rg'
+
+az container logs show --name 'zus1-rc-rcwebsite-dev-v1-ca' --resource-group 'zus1-rc-rcwebsite-dev-v1-rg'
+
+ #This fixed the loading issue
+az acr update -n 'containerRegistry' --admin-enabled false
+
+#acrPull needs to be set at the acr scope, not the rg scope
+
