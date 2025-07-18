@@ -84,6 +84,10 @@ jobs:
       SERVICE_MY_BLAZOR_APP_RESOURCE_EXISTS: ${{ vars.SERVICE_MY_BLAZOR_APP_RESOURCE_EXISTS }}
       ENVIRONMENT_NAME: ${{ vars.AZURE_PROD_ENVIRONMENT_NAME }}
     steps:
+      - name: Checkout Main Branch
+        run: |
+          git fetch origin main
+          git checkout main
       - name: Checkout
         uses: actions/checkout@v4
       - name: Create Pull Request to Main
@@ -107,7 +111,7 @@ jobs:
         run: azd provision --no-prompt
         env:
           AZD_INITIAL_ENVIRONMENT_CONFIG: ${{ secrets.AZD_INITIAL_ENVIRONMENT_CONFIG }}
-          ENVIRONMENT_NAME: ${{ github.ref == 'refs/heads/main' && vars.AZURE_PROD_ENVIRONMENT_NAME || vars.AZURE_DEV_ENVIRONMENT_NAME }}
-          environmentName: ${{ github.ref == 'refs/heads/main' && vars.AZURE_PROD_ENVIRONMENT_NAME || vars.AZURE_DEV_ENVIRONMENT_NAME }}
+          ENVIRONMENT_NAME: ${{ github.ref == 'refs/heads/dev' && vars.AZURE_DEV_ENVIRONMENT_NAME || vars.AZURE_PROD_ENVIRONMENT_NAME }}
+          environmentName: ${{ github.ref == 'refs/heads/dev' && vars.AZURE_DEV_ENVIRONMENT_NAME || vars.AZURE_PROD_ENVIRONMENT_NAME }}
       - name: Deploy Application
         run: azd deploy --no-prompt
