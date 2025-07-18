@@ -16,7 +16,6 @@ permissions:
 jobs:
   deploy-dev:
     runs-on: ubuntu-latest
-    environment: development
     env:
       AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
       AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
@@ -42,9 +41,6 @@ jobs:
         uses: actions/checkout@v4
       - name: Install azd
         uses: Azure/setup-azd@v2
-      - name: Set azd environment to development
-        run: azd env set --environment development
-
       - name: Log in with Azure (Federated Credentials)
         run: |
           azd auth login `
@@ -68,7 +64,6 @@ jobs:
   deploy-prod:
     needs: deploy-dev
     runs-on: ubuntu-latest
-    environment: production
     env:
       AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
       AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
@@ -102,8 +97,6 @@ jobs:
           body: "This pull request merges changes from dev to main to trigger the production deployment pipeline."
       - name: Install azd
         uses: Azure/setup-azd@v2
-      - name: Set azd environment to production
-        run: azd env set --environment production
       - name: Log in with Azure (Federated Credentials)
         run: |
           azd auth login `
@@ -118,6 +111,6 @@ jobs:
           ENVIRONMENT_NAME: ${{ vars.AZURE_PROD_ENVIRONMENT_NAME }}
           environmentName: ${{ vars.AZURE_PROD_ENVIRONMENT_NAME }}
       - name: Deploy Application
-        run: azd deploy --environment production
+        run: azd deploy --no-prompt
         env:
           AZURE_RESOURCE_GROUP: ${{ env.AZURE_RESOURCE_GROUP }}
