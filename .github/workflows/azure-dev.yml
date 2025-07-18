@@ -10,7 +10,8 @@ on:
 # https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-portal%2Clinux#set-up-azure-login-with-openid-connect-authentication
 permissions:
   id-token: write
-  contents: read
+  contents: write
+  # The contents permission is set to write to allow the workflow to create pull requests
 
 jobs:
   deploy-dev:
