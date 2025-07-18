@@ -61,3 +61,4 @@ Is my app using Workload Profiles(v2) or Consumption-Only(v1)
 - **Hybrid Cloud Integration:** Connect on-premises systems with cloud workloads, using custom networking and security policies.
 - **Financial Services:** Run high-availability trading platforms with strict compliance, monitoring, and disaster recovery requirements.
 
+test
