@@ -108,6 +108,6 @@ jobs:
         env:
           AZD_INITIAL_ENVIRONMENT_CONFIG: ${{ secrets.AZD_INITIAL_ENVIRONMENT_CONFIG }}
           ENVIRONMENT_NAME: ${{ github.ref == 'refs/heads/dev' && vars.AZURE_DEV_ENVIRONMENT_NAME || vars.AZURE_PROD_ENVIRONMENT_NAME }}
-          environmentName: ${{ github.ref_name == 'main' && 'production' || github.ref_name == 'dev' && 'dev' || 'staging' }}
+          environmentName: ${{ github.ref_name == 'main' && 'prod' || github.ref_name == 'dev' && 'dev' || 'uat' }}
       - name: Deploy Application
         run: azd deploy --no-prompt
