@@ -69,3 +69,4 @@ module resources 'resources.bicep' = {
 
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = resources.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT
 output AZURE_RESOURCE_MY_BLAZOR_APP_ID string = resources.outputs.AZURE_RESOURCE_MY_BLAZOR_APP_ID
+output resourceGroupName string = rg.name
