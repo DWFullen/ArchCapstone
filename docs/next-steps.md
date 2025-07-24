@@ -6,6 +6,7 @@
 2. [What was added](#what-was-added)
 3. [Billing](#billing)
 4. [Troubleshooting](#troubleshooting)
+5. [Improvements and Recommendations](#improvements-and-recommendations)
 
 ## Next Steps
 
@@ -86,6 +87,46 @@ A: Your service may have failed to start, or it may be missing some configuratio
 6. If logs are written to disk, use *Console* in the navigation to connect to a shell within the running container.
 
 For more troubleshooting information, visit [Container Apps troubleshooting](https://learn.microsoft.com/azure/container-apps/troubleshooting). 
+
+## Improvements and Recommendations - added 7/24/25
+
+### Culture
+- Foster better collaboration between development and operations teams by documenting shared responsibilities.
+- Implement blameless post-mortems for incidents to encourage transparency and learning.
+- Create runbooks that are accessible and executable by all team members.
+
+### Automation
+- Enhance CI/CD pipelines to automate testing, deployment, and security scans.
+- Adopt Infrastructure as Code (IaC) tools like Terraform or Bicep for consistent infrastructure provisioning.
+- Automate repetitive operational tasks, such as log analysis and scaling configurations.
+
+### Lean Practices
+- Break down large features into smaller, manageable chunks for faster delivery.
+- Focus on delivering value iteratively by adopting a minimal viable product (MVP) approach.
+- Identify and remove bottlenecks in the development and delivery pipeline.
+
+### Measurement
+- Set up dashboards to monitor key metrics like deployment frequency, lead time for changes, and mean time to recovery.
+- Implement robust logging and monitoring solutions to track application and infrastructure performance.
+- Use metrics to validate changes and identify areas for optimization.
+
+### Sharing
+- Document processes, architectural decisions, and runbooks in a shared repository.
+- Promote knowledge sharing through internal meetups and workshops.
+- Encourage cross-functional teams to work closely together to foster mutual understanding.
+
+### Security
+- Review and tighten permissions for federated credentials and secrets used in pipelines.
+- Integrate security scans (SAST, DAST, SCA) into the CI/CD pipeline.
+- Implement role-based access control (RBAC) for Azure resources.
+
+### Future Enhancements
+- Explore adding a User Acceptance Testing (UAT) stage to the pipeline for pre-production validation.
+- Periodically review and clean up unused resources in dev and prod environments to optimize costs.
+- Automate testing for infrastructure provisioning and application deployment.
+
+---
+These recommendations align with the DevOps core principles and aim to improve the reliability, scalability, and efficiency of the software delivery pipeline.
 
 ### Additional information
 
