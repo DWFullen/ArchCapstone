@@ -1084,9 +1084,6 @@ F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.
 F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.0\compressed\q1u5fyfuua-tptq2av103.gz
 F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.0\compressed\u99kiknkgf-lfu7j35m59.gz
 F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.0\compressed\1sperj734l-oyz0vx2fzb.gz
-F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.0\compressed\5wza6cmq7d-fvz4hx4as5.gz
-F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.0\compressed\uv0m8jj0mz-31yqzi018n.gz
-F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.0\compressed\1x8j8qyv39-rteqtwn93r.gz
 F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.0\staticwebassets.build.json
 F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.0\staticwebassets.build.json.cache
 F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.0\staticwebassets.development.json
@@ -1096,3 +1093,6 @@ F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.
 F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.0\refint\MyBlazorApp.dll
 F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.0\MyBlazorApp.pdb
 F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.0\ref\MyBlazorApp.dll
+F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.0\compressed\5wza6cmq7d-i707t9weec.gz
+F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.0\compressed\uv0m8jj0mz-wmghp79p5c.gz
+F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.0\compressed\1x8j8qyv39-75gip1y3sx.gz
