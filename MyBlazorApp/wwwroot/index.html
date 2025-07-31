@@ -28,6 +28,20 @@
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
     <script src="js/app.js"></script>
+    <script>
+        window.blazorTheme = {
+            setBodyClass: function (themeClass) {
+                document.body.classList.remove('dark-mode', 'light-mode');
+                document.body.classList.add(themeClass);
+            },
+            setTheme: function (theme) {
+                localStorage.setItem('theme', theme);
+            },
+            getTheme: function () {
+                return localStorage.getItem('theme') || 'dark';
+            }
+        };
+    </script>
 </body>
 
 </html>

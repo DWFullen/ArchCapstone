@@ -1,20 +1,80 @@
-﻿<div class="navbar navbar-dark bg-primary">
+﻿@inject IJSRuntime JS
+
+<nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(145deg, #0a1a36 60%, #ffffff 100%); border-bottom: 4px solid #e53935;">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">MyBlazorApp</a>
-        <nav class="nav flex-row">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </nav>
+        <a class="navbar-brand" href="">Rebel Corpo</a>
+        <button class="navbar-toggler" type="button" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="@NavMenuCssClass navbar-collapse">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">Home</NavLink>
+                </li>
+                <!-- Add more nav items here -->
+            </ul>
+            <button class="btn btn-outline-light ms-auto" @onclick="ToggleTheme" title="Toggle dark/light mode">
+                @(isDarkMode ? "🌙" : "☀️")
+            </button>
+        </div>
     </div>
-</div>
+</nav>
 
 @code {
-    // Remove collapsible behavior if not needed
+    private bool collapseNavMenu = true;
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    private void ToggleNavMenu() => collapseNavMenu = !collapseNavMenu;
+
+    private bool isDarkMode = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Try to get theme from localStorage
+            var theme = await JS.InvokeAsync<string>("blazorTheme.getTheme");
+            if (theme == "light")
+            {
+                isDarkMode = false;
+                await SetThemeClass();
+                StateHasChanged();
+            }
+            else if (theme == "dark")
+            {
+                isDarkMode = true;
+                await SetThemeClass();
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task ToggleTheme()
+    {
+        isDarkMode = !isDarkMode;
+        await SetThemeClass();
+        await JS.InvokeVoidAsync("blazorTheme.setTheme", isDarkMode ? "dark" : "light");
+    }
+
+    private async Task SetThemeClass()
+    {
+        await JS.InvokeVoidAsync("blazorTheme.setBodyClass", isDarkMode ? "dark-mode" : "light-mode");
+    }
 }
+
+<!-- Add this script to your index.html or _Host.cshtml -->
+<!--
+<script>
+    window.blazorTheme = {
+        setBodyClass: function (themeClass) {
+            document.body.classList.remove('dark-mode', 'light-mode');
+            document.body.classList.add(themeClass);
+        },
+        setTheme: function (theme) {
+            localStorage.setItem('theme', theme);
+        },
+        getTheme: function () {
+            return localStorage.getItem('theme') || 'dark';
+        }
+    };
+</script>
+-->
