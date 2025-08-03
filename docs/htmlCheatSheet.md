@@ -28,35 +28,6 @@
 <h6>Heading 6</h6>
 ```
 
-### Div Element
-<!-- Represents a generic container for grouping content. -->
-```html
-<div>
-    <h1>Heading inside a div</h1>
-    <p>Paragraph inside a div.</p>
-</div>
-```
-
-#### Use Cases:
-- **Grouping Content**: Use `div` to group related elements for styling or layout purposes.
-- **Flexbox/Grid Containers**: Often used as a parent container for flexbox or grid layouts.
-- **Dynamic Content**: Can be manipulated dynamically with JavaScript.
-
-#### Example with CSS:
-```html
-<div style="background-color: lightblue; padding: 10px;">
-    <h1>Styled Div</h1>
-    <p>This div has a background color and padding.</p>
-</div>
-```
-
-#### Example with Classes:
-```html
-<div class="container">
-    <h1>Div with a class</h1>
-    <p>This div uses a CSS class for styling.</p>
-</div>
-
 ### Paragraphs
 <!-- Represents a block of text as a paragraph. -->
 ```html

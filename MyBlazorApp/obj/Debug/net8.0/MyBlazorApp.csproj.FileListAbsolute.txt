@@ -1093,6 +1093,6 @@ F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.
 F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.0\refint\MyBlazorApp.dll
 F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.0\MyBlazorApp.pdb
 F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.0\ref\MyBlazorApp.dll
-F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.0\compressed\5wza6cmq7d-96fc9aquew.gz
-F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.0\compressed\uv0m8jj0mz-m5tytss8oz.gz
-F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.0\compressed\1x8j8qyv39-nf7pwizxdr.gz
+F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.0\compressed\5wza6cmq7d-h2cy28dqfz.gz
+F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.0\compressed\uv0m8jj0mz-3desa4eev8.gz
+F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\obj\Debug\net8.0\compressed\1x8j8qyv39-x09qhl3vmj.gz

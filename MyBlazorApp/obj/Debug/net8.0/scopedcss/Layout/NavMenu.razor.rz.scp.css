@@ -1,14 +1,7 @@
-.navbar-toggler[b-soj9rbgjfe] {
-    background-color: rgba(255, 255, 255, 0.1);
-}
 
 .top-row[b-soj9rbgjfe] {
     min-height: 3.5rem;
     background-color: rgba(0, 0, 0, 0.4);
-}
-
-.navbar-brand[b-soj9rbgjfe] {
-    font-size: 1.1rem;
 }
 
 .bi[b-soj9rbgjfe] {
@@ -34,21 +27,21 @@
 }
 
 .nav-item[b-soj9rbgjfe] {
-    font-size: 0.9rem;
-    padding-bottom: 0.5rem;
+    font-size: 0.rem;
+    padding-bottom: .5rem;
 }
 
 .nav-item:first-of-type[b-soj9rbgjfe] {
-    padding-top: 1rem;
+    padding-top: 10rem;
 }
 
 .nav-item:last-of-type[b-soj9rbgjfe] {
-    padding-bottom: 1rem;
+    padding-bottom: 0rem;
 }
 
 .nav-item[b-soj9rbgjfe]  a {
     color: #d7d7d7;
-    border-radius: 4px;
+    border-radius: px;
     height: 3rem;
     display: flex;
     align-items: center;
@@ -62,12 +55,67 @@
 
 .nav-item[b-soj9rbgjfe]  a:hover {
     background-color: rgba(255, 255, 255, 0.1);
-    color: white;
+    color: white; 
+}
+
+.container-fluid[b-soj9rbgjfe] {
+    height: auto;
+}
+
+.navbar-custom[b-soj9rbgjfe] {
+    display: flex;
+    flex-direction: column; /* Align items horizontally */
+    align-items: center; /* Vertically center items */
+    justify-content: flex-start; /* Align items to the left */
+    gap: 1rem; /* Add spacing between elements */
+    height: auto; /* Ensure the navbar fits its contents */
+    padding: 0;
+        /* Remove padding from the button container */
+}
+
+.navbar-nav[b-soj9rbgjfe] {
+    padding-left: 0; /* Remove any default padding */
+    margin-left: 0; /* Align with the navbar-brand */
+    list-style: none; /* Remove default list styling */
+    align-self: flex-start;
+    height: auto;
+    padding: 0; /* Remove padding from the button container */
+}
+
+.nav-item[b-soj9rbgjfe] {
+    margin-left: 0; /* Ensure no extra margin on nav items */
+    height: auto;
+    padding: 0; /* Remove padding from the button container */
+}
+
+.nav-item:first-of-type[b-soj9rbgjfe] {
+    margin-left: 0; /* Align the first nav item perfectly with the navbar-brand */
+    height: auto;
+    padding: 0; /* Remove padding from the button container */
+}
+
+.navbar-brand[b-soj9rbgjfe] {
+    margin-right: 0rem; /* Optional: Add spacing between brand and nav items */
+    font-size: 5.0rem;
+    height: auto;
+    padding: 0; /* Remove padding from the button container */
+}
+
+.mode-toggle[b-soj9rbgjfe] {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;/* Aligns the button to the right */
+    margin-left: auto;/* Pushes the button to the far right */
+    position: absolute;/* Position the container relative to the navbar */
+    top: 0.5rem; /* Adjust vertical alignment */
+    right: 1rem; /* Align to the right edge */
+    height: auto;
+    padding: 0; /* Remove padding from the button container */
 }
 
 @media (min-width: 641px) {
     .navbar-toggler[b-soj9rbgjfe] {
-        display: none;
+        display: flex;
     }
 
     .collapse[b-soj9rbgjfe] {
