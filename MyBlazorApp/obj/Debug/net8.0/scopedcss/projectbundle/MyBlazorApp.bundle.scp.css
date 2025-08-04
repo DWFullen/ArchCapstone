@@ -7,8 +7,8 @@
 
 nav.top-nav[b-pv57ownmzj] {
     width: 100%;
-    background: linear-gradient(90deg, #0a1a36 0%, #0a1a36 80%, #ffffff 100%);
-    border-bottom: 4px solid #e53935;
+    background: linear-gradient(145deg, #4d4d4d 60%, #f7931a 100%);
+    border-bottom: 4px solid #f7931a;
     display: flex;
     align-items: center;
     padding: 0 2rem;
@@ -33,14 +33,14 @@ nav.top-nav .nav-link[b-pv57ownmzj] {
 
 nav.top-nav .nav-link.active[b-pv57ownmzj],
 nav.top-nav .nav-link:hover[b-pv57ownmzj] {
-    background: rgba(10, 26, 54, 0.2);
+    background: #4d4d4d;
     color: #e53935;
     text-decoration: none;
 }
 
-main[b-pv57ownmzj] {
+[b-pv57ownmzj] main {
     flex: 1;
-    background-color: #111111;
+    background-color: #4d4d4d;
     color: #ffffff;
 }
 /* /Layout/NavMenu.razor.rz.scp.css */
@@ -145,6 +145,7 @@ main[b-pv57ownmzj] {
     font-size: 5.0rem;
     height: auto;
     padding: 0; /* Remove padding from the button container */
+    color: rgb(247,147,26);
 }
 
 .mode-toggle[b-soj9rbgjfe] {
@@ -175,3 +176,11 @@ main[b-pv57ownmzj] {
         overflow-y: auto;
     }
 }
+
+@font-face {
+    font-family: 'Ryzes';
+    src: url('/fonts/Ryzes-ax92x.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+

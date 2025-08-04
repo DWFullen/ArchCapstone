@@ -36,12 +36,12 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ29udGFpbmVyc1xDb250YWluZXJMaXN0LnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Documents/GettingGood/Azure Projects/ArchCapstone/MyBlazorApp/Pages/Counter.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ291bnRlci5yYXpvcg==
-build_metadata.AdditionalFiles.CssScope = 
-
 [F:/Documents/GettingGood/Azure Projects/ArchCapstone/MyBlazorApp/Pages/Home.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSG9tZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[F:/Documents/GettingGood/Azure Projects/ArchCapstone/MyBlazorApp/Pages/Shop.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2hvcC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
 [F:/Documents/GettingGood/Azure Projects/ArchCapstone/MyBlazorApp/Pages/Weather.razor]

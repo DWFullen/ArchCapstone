@@ -6,8 +6,8 @@
 
 nav.top-nav[b-pv57ownmzj] {
     width: 100%;
-    background: linear-gradient(90deg, #0a1a36 0%, #0a1a36 80%, #ffffff 100%);
-    border-bottom: 4px solid #e53935;
+    background: linear-gradient(145deg, #4d4d4d 60%, #f7931a 100%);
+    border-bottom: 4px solid #f7931a;
     display: flex;
     align-items: center;
     padding: 0 2rem;
@@ -32,13 +32,13 @@ nav.top-nav .nav-link[b-pv57ownmzj] {
 
 nav.top-nav .nav-link.active[b-pv57ownmzj],
 nav.top-nav .nav-link:hover[b-pv57ownmzj] {
-    background: rgba(10, 26, 54, 0.2);
+    background: #4d4d4d;
     color: #e53935;
     text-decoration: none;
 }
 
-main[b-pv57ownmzj] {
+[b-pv57ownmzj] main {
     flex: 1;
-    background-color: #111111;
+    background-color: #4d4d4d;
     color: #ffffff;
 }

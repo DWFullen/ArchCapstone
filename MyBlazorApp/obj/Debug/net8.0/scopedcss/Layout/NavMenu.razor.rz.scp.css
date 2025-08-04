@@ -99,6 +99,7 @@
     font-size: 5.0rem;
     height: auto;
     padding: 0; /* Remove padding from the button container */
+    color: rgb(247,147,26);
 }
 
 .mode-toggle[b-soj9rbgjfe] {
@@ -129,3 +130,11 @@
         overflow-y: auto;
     }
 }
+
+@font-face {
+    font-family: 'Ryzes';
+    src: url('/fonts/Ryzes-ax92x.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
