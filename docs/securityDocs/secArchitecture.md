@@ -9,3 +9,4 @@
 
 #### Costs
 ![Costs](./appGatewayForContainersCost.PNG)
+
