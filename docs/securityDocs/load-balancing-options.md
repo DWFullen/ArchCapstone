@@ -10,7 +10,6 @@ This document outlines the available load balancing options for Azure Container 
 1. **Azure Application Gateway for Containers**
 2. **Azure Traffic Manager**
 3. **Azure Front Door**
-4. **Azure Load Balancer**
 
 Each option will be evaluated based on its architecture, implementation options, and associated costs. The final recommendation for this project is to use **Azure Front Door**.
 
@@ -327,39 +326,6 @@ Use Azure Front Door whenever you need global, secure, L7-aware routing with CDN
 
 ### Documentation
 #### https://learn.microsoft.com/en-us/azure/frontdoor/front-door-overview
----
-
-## 4. Azure Load Balancer
-
-### Architecture
-![Architecture](./loadBalancerArchitecture.PNG)
-
-Azure Load Balancer operates at Layer 4 of the OSI model, providing high-performance, low-latency load balancing for TCP and UDP traffic. It is ideal for scenarios requiring network-level distribution without application-layer inspection.
-
-### Implementation Options
-- **Basic Load Balancer**: Suitable for small-scale, non-critical workloads.
-- **Standard Load Balancer**: Recommended for production workloads, offering higher availability, scalability, and security.
-
-### Challenges Solved
-- Distributes traffic evenly across backend resources.
-- Provides high availability and fault tolerance for network traffic.
-- Supports both inbound and outbound traffic scenarios.
-
-### Key Features
-- Layer 4 (TCP/UDP) load balancing.
-- Health probes to monitor backend resource availability.
-- Integration with Azure Virtual Network.
-- Support for IPv6 and NAT rules.
-- Zone redundancy for high availability.
-
-### Costs
-- Pricing is based on the number of rules and data processed.
-- Standard Load Balancer incurs additional charges for outbound data transfer.
-
-### Documentation
-- [Azure Load Balancer Overview](https://learn.microsoft.com/en-us/azure/load-balancer/load-balancer-overview)
-- [Azure Load Balancer Pricing](https://azure.microsoft.com/en-us/pricing/details/load-balancer/)
-- [Azure Load Balancer Documentation](https://learn.microsoft.com/en-us/azure/load-balancer/)
 
 ---
 
@@ -367,7 +333,11 @@ Azure Load Balancer operates at Layer 4 of the OSI model, providing high-perform
 Based on the evaluation of architecture, implementation options, and costs, **Azure Front Door** is the recommended load balancing solution for this project. It provides:
 
 - Global load balancing with high availability.
-- Advanced security features like WAF.
+- Advanced security features:
+  - TLS termination
+  - DDoS edge protection
+  - global POPs
+  - origin shielding.
 - Cost-effective scaling for expected traffic patterns.
 
 ---
