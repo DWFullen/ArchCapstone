@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  # 1. Detect what changed
+  # 1. Detect what changed - test
   filter:
     runs-on: ubuntu-latest
     outputs:
