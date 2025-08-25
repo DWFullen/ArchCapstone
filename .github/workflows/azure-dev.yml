@@ -1,20 +1,37 @@
-# Run on pushes to dev or main, and on manual dispatch
-
 on:
   push:
     branches:
       - dev
   workflow_dispatch:
 
-# Set up permissions for deploying with secretless Azure federated credentials
-# https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-portal%2Clinux#set-up-azure-login-with-openid-connect-authentication
 permissions:
   id-token: write
   contents: write
-  # The contents permission is set to write to allow the workflow to create pull requests
 
 jobs:
-  deploy-dev:
+  # 1. Detect what changed
+  filter:
+    runs-on: ubuntu-latest
+    outputs:
+      infra: ${{ steps.filter.outputs.infra }}
+      app: ${{ steps.filter.outputs.app }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Filter paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            infra:
+              - 'infra/**'
+            app:
+              - 'MyBlazorApp/**'
+
+  # 2. Deploy infrastructure to development if infra files changed
+  deploy-infra-dev:
+    needs: filter
+    if: needs.filter.outputs.infra == 'true'
     runs-on: ubuntu-latest
     environment:
       name: development
@@ -63,13 +80,54 @@ jobs:
         run: |
           echo "AZURE_RESOURCE_GROUP=${AZURE_Z_LOCATION}-${AZURE_SUBSCRIPTION}-${APPLICATION_NAME}-${ENVIRONMENT_NAME}-${APPLICATION_VERSION}-rg" >> $GITHUB_ENV
 
+  # 3. Deploy application to development if app files changed
+  deploy-app-dev:
+    needs: filter
+    if: needs.filter.outputs.app == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: development
+      url: https://example.com/dev-approval
+    env:
+      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+      APPLICATION_NAME: ${{ vars.APPLICATION_NAME }}
+      APPLICATION_VERSION: ${{ vars.APPLICATION_VERSION }}
+      AZD_PIPELINE_PROVIDER: ${{ vars.AZD_PIPELINE_PROVIDER }}
+      AZURE_CONTAINER_REGISTRY_ENDPOINT: ${{ vars.AZURE_CONTAINER_REGISTRY_ENDPOINT }}
+      AZURE_DEV_ENVIRONMENT_NAME: ${{ vars.AZURE_DEV_ENVIRONMENT_NAME }}
+      AZURE_UAT_ENVIRONMENT_NAME: ${{ vars.AZURE_UAT_ENVIRONMENT_NAME }}
+      AZURE_PROD_ENVIRONMENT_NAME: ${{ vars.AZURE_PROD_ENVIRONMENT_NAME }}
+      AZURE_PIPELINE_CLIENT_ID: ${{ vars.AZURE_PIPELINE_CLIENT_ID }}
+      AZURE_RESOURCE_MY_BLAZOR_APP_ID: ${{ vars.AZURE_RESOURCE_MY_BLAZOR_APP_ID }}
+      AZURE_SUBSCRIPTION: ${{ vars.AZURE_SUBSCRIPTION }}
+      AZURE_Z_LOCATION: ${{ vars.AZURE_Z_LOCATION }}
+      SERVICE_MY_BLAZOR_APP_IMAGE_NAME: ${{ vars.SERVICE_MY_BLAZOR_APP_IMAGE_NAME }}
+      SERVICE_MY_BLAZOR_APP_RESOURCE_EXISTS: ${{ vars.SERVICE_MY_BLAZOR_APP_RESOURCE_EXISTS }}
+      ENVIRONMENT_NAME: ${{ vars.AZURE_DEV_ENVIRONMENT_NAME }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install azd
+        uses: Azure/setup-azd@v2
+      - name: Log in with Azure (Federated Credentials)
+        run: |
+          azd auth login `
+            --client-id "$Env:AZURE_CLIENT_ID" `
+            --federated-credential-provider "github" `
+            --tenant-id "$Env:AZURE_TENANT_ID"
+        shell: pwsh
       - name: Deploy Application
         run: azd deploy --no-prompt
         env:
           AZURE_RESOURCE_GROUP: ${{ env.AZURE_RESOURCE_GROUP }}
 
+  # 4. Deploy to production (optional: you can control if it runs after dev jobs)
   deploy-prod:
-    needs: deploy-dev
+    needs: [deploy-infra-dev, deploy-app-dev]
     runs-on: ubuntu-latest
     environment:
       name: production
