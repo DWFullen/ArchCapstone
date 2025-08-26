@@ -18,3 +18,22 @@ resource storageBlobContributorRole 'Microsoft.Authorization/roleAssignments@202
     principalType: 'ServicePrincipal'
   }
 }
+
+
+// For reference, needs to be modified
+@description('Specifies the role definition ID used in the role assignment.')
+param roleDefinitionID string
+
+@description('Specifies the principal ID assigned to the role.')
+param principalId string
+
+var roleAssignmentName= guid(resourceGroup().id, principalId, roleDefinitionID)
+
+resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: roleAssignmentName
+  properties: {
+    roleDefinitionId: roleDefinitionID
+    principalId: principalId
+    principalType: 'User'
+  }
+}
