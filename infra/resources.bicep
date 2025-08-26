@@ -164,3 +164,82 @@ module myBlazorApp 'br/public:avm/res/app/container-app:0.8.0' = {
 }
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = containerRegistry.outputs.loginServer
 output AZURE_RESOURCE_MY_BLAZOR_APP_ID string = myBlazorApp.outputs.resourceId
+
+//Additional Resources
+
+//Storage Account
+/* module storageAccount 'br/public:avm/res/storage/storage-account:0.5.0' = {
+  name: 'storageAccount'
+  params: {
+    name: toLower('${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.storageAccounts}')
+    location: location
+    tags: tags
+    sku: 'Standard_LRS'
+    kind: 'StorageV2'
+    accessTier: 'Hot'
+    allowBlobPublicAccess: false
+    minimumTlsVersion: 'TLS1_2'
+    enableHierarchicalNamespace: false
+    roleAssignments: [
+      {
+        principalId: myBlazorAppIdentity.outputs.principalId
+        principalType: 'ServicePrincipal'
+        roleDefinitionIdOrName: subscriptionResourceId(
+          'Microsoft.Authorization/roleDefinitions',
+          'ba92f5b4-2d11-453d-a403-e96b0029c9fe' // Storage Blob Data Contributor
+        )
+      }
+    ]
+  }
+}
+ */
+
+/* // Storage Account for file storage and serving
+resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
+  name: '${uniqueString(resourceGroup().id)}storage'
+  location: resourceGroup().location
+  sku: {
+    name: 'Standard_LRS'
+  }
+  kind: 'StorageV2'
+  properties: {
+    accessTier: 'Hot'
+    minimumTlsVersion: 'TLS1_2'
+    allowBlobPublicAccess: false
+    supportsHttpsTrafficOnly: true
+  }
+}
+
+// Event Grid Topic for eventing
+resource eventGridTopic 'Microsoft.EventGrid/topics@2023-06-01-preview' = {
+  name: '${uniqueString(resourceGroup().id)}eventgrid'
+  location: resourceGroup().location
+  properties: {
+    inputSchema: 'EventGridSchema'
+  }
+}
+
+// Event Grid Subscription to Storage Account (integration point)
+resource eventGridSubscription 'Microsoft.EventGrid/eventSubscriptions@2023-06-01-preview' = {
+  name: 'storage-file-requested'
+  scope: storageAccount.id
+  properties: {
+    destination: {
+      endpointType: 'WebHook'
+      properties: {
+        // TODO: Replace with your Azure Function or Logic App endpoint for sending email
+        endpointUrl: 'https://your-email-function-endpoint'
+      }
+    }
+    filter: {
+      includedEventTypes: [
+        'Microsoft.Storage.BlobCreated'
+        // Add other event types as needed
+      ]
+    }
+  }
+}
+
+// TODO: Assign access to container app (managed identity or connection string)
+// TODO: Integrate with Azure Front Door in future for global routing and CDN
+ */

@@ -181,9 +181,41 @@
 
 ## Next Steps
 
-- Review each area for improvement and prioritize based on business needs.
-- Use Azure Advisor and Cost Management for ongoing recommendations.
-- Regularly revisit the Well-Architected Framework as your solution evolves.
+Current Goal:
+
+Add an Azure Storage Account for file storage and serving.
+Add Azure Event Grid to trigger email notifications when a file is requested.
+Ensure both resources are accessible by your container app (via managed identity or connection string).
+Prepare for future integration with Azure Front Door.
+Step-by-step Plan:
+
+Azure Storage Account
+
+Deploy a storage account (with blob/file support).
+Configure access for your container app (via managed identity or connection string).
+Set up a container for file storage.
+Azure Event Grid
+
+Deploy Event Grid.
+Set up an event subscription to the storage account (e.g., for blob created/read events).
+Configure the event to trigger an Azure Function or Logic App that sends an email.
+Access
+
+Ensure your container app has permissions to read/write files in the storage account.
+Ensure Event Grid can trigger the email workflow.
+Future: Azure Front Door
+
+Plan to add Front Door for global routing, security, and CDN.
+
+## RBAC & Permissions Bicep To-Do List
+
+1. Refactor `storage-access-roles.bicep` to use correct resource scoping for role assignments.
+2. Update `rbacMain.bicep` to pass resource references (not just IDs) for RBAC assignments.
+3. Ensure RBAC assignment resources use the `scope` property with a valid resource reference.
+4. Set up CI/CD pipeline (GitHub Actions) to deploy RBAC Bicep files only when those files change.
+5. Test RBAC deployment independently from main infrastructure deployment.
+6. Document RBAC deployment process and usage in the main `readme.md`.
+7. (Optional) Add error handling and validation for resource existence before assigning roles.
 
 ---
 
