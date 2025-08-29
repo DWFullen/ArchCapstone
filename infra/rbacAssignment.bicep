@@ -3,7 +3,7 @@
 
 targetScope = 'resourceGroup'
 
-param storageAccountResourceId string
+/* param storageAccountResourceId string
 param principalId string
 
 resource storageBlobContributorRole 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
@@ -18,7 +18,7 @@ resource storageBlobContributorRole 'Microsoft.Authorization/roleAssignments@202
     principalType: 'ServicePrincipal'
   }
 }
-
+ */
 
 // For reference, needs to be modified
 @description('Specifies the role definition ID used in the role assignment.')
