@@ -1,0 +1,91 @@
+# cloudAdminCommands.azcli
+
+#------------------------------------AZURE CLI Environment Setup-----------------------------------------------
+
+# List Azure environments
+az cloud list --output table
+# Set Azure environment (example: AzureCloud)
+az cloud set --name AzureCloud
+# Log in to Azure
+az login
+# List available locations
+az account list-locations --output table
+
+#------------------------------------AZURE ACCOUNT COMMANDS-----------------------------------------------
+
+# List subscriptions (name and ID)
+az account list --query "[].{Name:name, Id:id}" --output table
+# Get specific subscription (example: Agency Production - Azure Commercial)
+az account list --query "[?name=='Agency Production - Azure Commercial'].{Name:name, Id:id}" --output json
+# Set subscription
+az account set --subscription "SUBSCRIPTION_ID"
+# Show current subscription context
+az account show
+# List resource groups
+az group list --output table
+
+#------------------------------------AZURE RG COMMANDS-----------------------------------------------
+
+# Get resource group ID
+az group show --name "rgName" --query id --output tsv
+# List role assignments for a resource group
+az role assignment list --resource-group "resourceGroup" --output table
+# Delete resource group
+az group delete --name MyResourceGroup --yes
+# List deployments in a resource group
+az deployment group list --resource-group "zus1-agency-application-v010-sbx-budget-rg" --output table
+# Get activity log for a resource group
+az monitor activity-log list --resource-group "zus1-agency-application-v010-sbx-budget-rg" --output table
+# List role definitions containing SQL
+az role definition list --query "[?contains(name, 'SQL')]" --output table
+
+#------------------------------------AZURE STORAGE ACCOUNT COMMANDS-----------------------------------------------
+
+# Get storage account ID
+az storage account show --name saName --resource-group rgName --query id --output tsv
+# List file shares in a storage account
+az storage share list --account-name saName --output table
+# List local users for a storage account
+az storage account local-user list --account-name saName --resource-group rgName --output table
+# WORM Policy (immutability)
+az storage container immutability-policy create --account-name zus1agencynisttestsbxv1sa --container zus1agencynisttestsbxv1cr --period 2555 --resource-group zus1-agency-nisttest-sbx-v1-rg
+# Lock immutability policy
+az storage container immutability-policy lock --account-name zus1agencynisttestsbxv1sa --container zus1agencynisttestsbxv1cr --etag <etag> --resource-group zus1-agency-nisttest-sbx-v1-rg
+# Get immutability policy
+az storage container immutability-policy show --account-name zus1agencynisttestsbxv1sa --container zus1agencynisttestsbxv1cr --resource-group zus1-agency-nisttest-sbx-v1-rg
+
+#------------------------------------AZURE ACTIVE DIRECTORY COMMANDS----------------------------------------------
+
+# List app registrations
+az ad app list --display-name "<App Registration Name>" --output table
+# Get user object ID
+az ad user show --id "user@website.com" --query objectId --output tsv
+# Get group object ID
+az ad group show --group "UserGroup" --query objectId --output tsv
+# Get role definition by name
+az role definition list --name "Storage Blob Data Contributor" --query "[0].{Name:name, Id:id}" --output table
+# Get role definition details
+az role definition show --name "RoleName" --output json
+# Assign role to Entra object
+az role assignment create --assignee "AssigneeObject/Application/UserID" --role "RoleDefinition" --scope "ScopeDefinition"
+# List role assignments for an object
+az role assignment list --assignee "AssigneeObject/Application/UserID" --output table
+# List groups starting with Agency
+az ad group list --query "[?starts_with(displayName, 'Agency')].{DisplayName:displayName, Id:objectId}" --output table
+# List groups containing Agency (requires Microsoft Graph CLI)
+# az graph query -q "..." (not directly supported in azcli)
+
+#------------------------------------AZURE CONTAINER REGISTRY REPOSITORY COMMANDS----------------------------------------------
+
+# Note: ACR token management requires Azure CLI or REST API calls
+# Use az acr token commands or REST API as needed
+
+#---------------------------------------------------AZURE APP SERVICE COMMANDS---------------------------------------------------
+
+# Add CORS origin to web app
+az webapp cors add --resource-group DWDAPI --name dwdapi --allowed-origins https://examplewebsite.com
+
+#----------------------------------------------------------TICKET--------------------------------------------------------------------------------
+#---------------------------------------------------------0000000--------------------------------------------------------------------------------
+
+# Space used for temporary code for ticket work

@@ -1,10 +1,31 @@
-param storageAccountName string
-param systemTopics_zus1iotnisttestsbxv2sa_d146e609_f83b_49c4_8f5d_c8f01a9bad69_name string = 'zus1iotnisttestsbxv2sa-d146e609-f83b-49c4-8f5d-c8f01a9bad69'
+@description('Location code for Azure region (e.g., zus1 for East US 1)')
+param zLocation string
+
+@description('Short name or code for Azure subscription')
+param azureSubscription string
+
+@description('Application name for resource naming')
+param applicationName string
+
+@description('Environment name for resource naming (e.g., dev, uat, prod)')
+param devEnvironmentName string
+
+@description('Application version for resource naming')
+param applicationVersion string
+
+@description('Tags that will be applied to all resources')
+param tags object = {}
+
+var abbrs = loadJsonContent('./abbreviations.json')
+
+var storageAccountName = toLower('${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.storageStorageAccounts}')
+// Removed unused parameter for system topic name
 param location string
 //Private Endpoint Parameters
 param privateEndpointName string
-param StorageAccountSubnetName string
-param StorageAccountSubnetId string
+param storagePrivateEndpointName string
+param storageSubnetName string
+param storageSubnetResourceId string
 /* 
 param privateEndpoints_zus1_iot_nisttest_sbx_v2_pe_name string = 'zus1-iot-nisttest-sbx-v2-pe'
 param virtualNetworks_zus1_iot_nisttest_sbx_v2_vnet_name string = 'zus1-iot-nisttest-sbx-v2-vnet'
@@ -12,38 +33,20 @@ param networkSecurityGroups_zus1_iot_nisttest_sbx_v2_nsg_name string = 'zus1-iot
 param virtualNetworks_zus1_iot_automation_sbx_vnet_externalid string = '/subscriptions/5e75bd1d-92d0-464c-809f-0992c3cf0ebe/resourceGroups/zus1-iot-automation-sbx-v2-rg/providers/Microsoft.Network/virtualNetworks/zus1-iot-automation-sbx-vnet' 
 */
 
-
-param AgencyNameTag string = 'Agency-Name'
-param BillingCodeTag string = 'Billing-Code'
-param EnvironmentTierTag string = 'Environment-Tier'
-param ApplicationNameTag string = 'Application-Name'
-param ResourceOwnerTag string = 'Resource-Owner'
-param InformationIdTag string = 'InformationId'
-param ProcurementIdTag string = 'ProcurementId'
-
-param AgencyNameTagValue string
-param BillingCodeTagValue string
-param EnvironmentTierTagValue string
-param ApplicationNameTagValue string
-param ResourceOwnerTagValue string
-param InformationIdTagValue string
-param ProcurementIdTagValue string
-
-resource storageAccountName_resource 'Microsoft.Storage/storageAccounts@2024-01-01' = {
+resource storageAccount 'Microsoft.Storage/storageAccounts@2024-01-01' = {
   name: storageAccountName
   location: location
-  tags: {
-    '${AgencyNameTag}': AgencyNameTagValue
-    '${BillingCodeTag}': BillingCodeTagValue
-    '${EnvironmentTierTag}': EnvironmentTierTagValue
-    '${ApplicationNameTag}': ApplicationNameTagValue
-    '${ResourceOwnerTag}': ResourceOwnerTagValue
-    '${InformationIdTag}': InformationIdTagValue
-    '${ProcurementIdTag}': ProcurementIdTagValue
-  }
+  tags: union(tags, {
+    azdServiceName: 'nist-storage-account'
+    zLocation: zLocation
+    azureSubscription: azureSubscription
+    applicationName: applicationName
+    devEnvironmentName: devEnvironmentName
+    applicationVersion: applicationVersion
+  })
   sku: {
     name: 'Standard_LRS'
-    tier: 'Standard'
+    // Removed tier property (read-only)
   }
   kind: 'StorageV2'
   properties: {
@@ -59,8 +62,8 @@ resource storageAccountName_resource 'Microsoft.Storage/storageAccounts@2024-01-
     networkAcls: {
       resourceAccessRules: [
         {
-          tenantId: '2199bfba-a409-4f13-b0c4-18b45933d88d'
-          resourceId: '/subscriptions/f8d01a59-c415-4364-95a4-babff4c37b0f/providers/Microsoft.Security/datascanners/storageDataScanner'
+          tenantId: subscription().tenantId
+          resourceId: resourceId('Microsoft.Security/datascanners', 'storageDataScanner')
         }
       ]
       bypass: 'AzureServices'
@@ -87,27 +90,26 @@ resource storageAccountName_resource 'Microsoft.Storage/storageAccounts@2024-01-
   }
 }
 
-resource systemTopics_zus1iotnisttestsbxv2sa_d146e609_f83b_49c4_8f5d_c8f01a9bad69_name_resource 'Microsoft.EventGrid/systemTopics@2025-02-15' = {
-  name: systemTopics_zus1iotnisttestsbxv2sa_d146e609_f83b_49c4_8f5d_c8f01a9bad69_name
+resource eventGridSystemTopic 'Microsoft.EventGrid/systemTopics@2025-02-15' = {
+  name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.eventGridDomainsTopics}'
   location: location
-  tags: {
-    '${AgencyNameTag}': AgencyNameTagValue
-    '${BillingCodeTag}': BillingCodeTagValue
-    '${EnvironmentTierTag}': EnvironmentTierTagValue
-    '${ApplicationNameTag}': ApplicationNameTagValue
-    '${ResourceOwnerTag}': ResourceOwnerTagValue
-    '${InformationIdTag}': InformationIdTagValue
-    '${ProcurementIdTag}': ProcurementIdTagValue
-  }
+  tags: union(tags, {
+    azdServiceName: 'nist-eventgrid-systemtopic'
+    zLocation: zLocation
+    azureSubscription: azureSubscription
+    applicationName: applicationName
+    devEnvironmentName: devEnvironmentName
+    applicationVersion: applicationVersion
+  })
   properties: {
-    source: storageAccountName_resource.id
+    source: storageAccount.id
     topicType: 'microsoft.storage.storageaccounts'
   }
 }
 
-resource systemTopics_zus1iotnisttestsbxv2sa_d146e609_f83b_49c4_8f5d_c8f01a9bad69_name_StorageAntimalwareSubscription 'Microsoft.EventGrid/systemTopics/eventSubscriptions@2025-02-15' = {
-  parent: systemTopics_zus1iotnisttestsbxv2sa_d146e609_f83b_49c4_8f5d_c8f01a9bad69_name_resource
-  name: 'StorageAntimalwareSubscription'
+resource eventGridSystemTopicAntimalwareSubscription 'Microsoft.EventGrid/systemTopics/eventSubscriptions@2025-02-15' = {
+  parent: eventGridSystemTopic
+  name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.antiMalwareSubscription}'
   properties: {
     destination: {
       properties: {
@@ -140,13 +142,10 @@ resource systemTopics_zus1iotnisttestsbxv2sa_d146e609_f83b_49c4_8f5d_c8f01a9bad6
   }
 }
 
-resource storageAccountName_default 'Microsoft.Storage/storageAccounts/blobServices@2024-01-01' = {
-  parent: storageAccountName_resource
+resource storageAccountBlobService 'Microsoft.Storage/storageAccounts/blobServices@2024-01-01' = {
+  parent: storageAccount
   name: 'default'
-  sku: {
-    name: 'Standard_LRS'
-    tier: 'Standard'
-  }
+  // Removed invalid sku block
   properties: {
     containerDeleteRetentionPolicy: {
       enabled: true
@@ -163,13 +162,10 @@ resource storageAccountName_default 'Microsoft.Storage/storageAccounts/blobServi
   }
 }
 
-resource Microsoft_Storage_storageAccounts_fileServices_storageAccountName_default 'Microsoft.Storage/storageAccounts/fileServices@2024-01-01' = {
-  parent: storageAccountName_resource
+resource storageAccountFileService 'Microsoft.Storage/storageAccounts/fileServices@2024-01-01' = {
+  parent: storageAccount
   name: 'default'
-  sku: {
-    name: 'Standard_LRS'
-    tier: 'Standard'
-  }
+  // Removed invalid sku block
   properties: {
     protocolSettings: {
       smb: {}
@@ -184,9 +180,9 @@ resource Microsoft_Storage_storageAccounts_fileServices_storageAccountName_defau
   }
 }
 
-resource storageAccountName_storageAccountName_d00a04e4_1e14_4195_9812_688cefccf1d5 'Microsoft.Storage/storageAccounts/privateEndpointConnections@2024-01-01' = {
-  parent: storageAccountName_resource
-  name: '${storageAccountName}.d00a04e4-1e14-4195-9812-688cefccf1d5'
+resource storageAccountPrivateEndpointConnection 'Microsoft.Storage/storageAccounts/privateEndpointConnections@2024-01-01' = {
+  parent: storageAccount
+  name: '${storageAccountName}-${abbrs.privateEndpointConnection}'
   properties: {
     privateEndpoint: {}
     privateLinkServiceConnectionState: {
@@ -198,8 +194,8 @@ resource storageAccountName_storageAccountName_d00a04e4_1e14_4195_9812_688cefccf
   // dependsOn: [virtualNetworks_zus1_iot_nisttest_sbx_v2_vnet_name_zus1_iot_nisttest_sbx_v2_snet]
 }
 
-resource Microsoft_Storage_storageAccounts_queueServices_storageAccountName_default 'Microsoft.Storage/storageAccounts/queueServices@2024-01-01' = {
-  parent: storageAccountName_resource
+resource storageAccountQueueService 'Microsoft.Storage/storageAccounts/queueServices@2024-01-01' = {
+  parent: storageAccount
   name: 'default'
   properties: {
     cors: {
@@ -208,8 +204,8 @@ resource Microsoft_Storage_storageAccounts_queueServices_storageAccountName_defa
   }
 }
 
-resource Microsoft_Storage_storageAccounts_tableServices_storageAccountName_default 'Microsoft.Storage/storageAccounts/tableServices@2024-01-01' = {
-  parent: storageAccountName_resource
+resource storageAccountTableService 'Microsoft.Storage/storageAccounts/tableServices@2024-01-01' = {
+  parent: storageAccount
   name: 'default'
   properties: {
     cors: {
@@ -218,9 +214,9 @@ resource Microsoft_Storage_storageAccounts_tableServices_storageAccountName_defa
   }
 }
 
-resource storageAccountName_default_zus1iotnisttestsbxv2cr 'Microsoft.Storage/storageAccounts/blobServices/containers@2024-01-01' = {
-  parent: storageAccountName_default
-  name: 'zus1iotnisttestsbxv2cr'
+resource storageAccountBlobContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2024-01-01' = {
+  parent: storageAccountBlobService
+  name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.storageBlobContainers}'
   properties: {
     immutableStorageWithVersioning: {
       enabled: false
@@ -229,28 +225,26 @@ resource storageAccountName_default_zus1iotnisttestsbxv2cr 'Microsoft.Storage/st
     denyEncryptionScopeOverride: false
     publicAccess: 'None'
   }
-
 }
 
-resource privateEndpoints_zus1_iot_nisttest_sbx_v2_pe_name_resource 'Microsoft.Network/privateEndpoints@2024-05-01' = {
-  name: privateEndpointName
+resource nistStoragePrivateEndpoint 'Microsoft.Network/privateEndpoints@2024-05-01' = {
+  name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.privateEndpoint}'
   location: location
-  tags: {
-    '${AgencyNameTag}': AgencyNameTagValue
-    '${BillingCodeTag}': BillingCodeTagValue
-    '${EnvironmentTierTag}': EnvironmentTierTagValue
-    '${ApplicationNameTag}': ApplicationNameTagValue
-    '${ResourceOwnerTag}': ResourceOwnerTagValue
-    '${InformationIdTag}': InformationIdTagValue
-    '${ProcurementIdTag}': ProcurementIdTagValue
-  }
+  tags: union(tags, {
+    azdServiceName: 'nist-storage-private-endpoint'
+    zLocation: zLocation
+    azureSubscription: azureSubscription
+    applicationName: applicationName
+    devEnvironmentName: devEnvironmentName
+    applicationVersion: applicationVersion
+  })
   properties: {
     privateLinkServiceConnections: [
       {
-        name: StorageAccountSubnetName//'${privateEndpoints_zus1_iot_nisttest_sbx_v2_pe_name}_ff3140d5-2f1e-470a-833b-b0ab7410c019'
-        id: resourceId('Microsoft.Network/privateLinkServiceConnections', privateEndpointName)
+        name: storageSubnetName
+        id: resourceId('Microsoft.Network/privateLinkServiceConnections', storagePrivateEndpointName)
         properties: {
-          privateLinkServiceId: resourceId('Microsoft.Storage/storageAccounts',storageAccountName)
+          privateLinkServiceId: resourceId('Microsoft.Storage/storageAccounts', storageAccountName)
           groupIds: [
             'blob'
           ]
@@ -265,13 +259,12 @@ resource privateEndpoints_zus1_iot_nisttest_sbx_v2_pe_name_resource 'Microsoft.N
     manualPrivateLinkServiceConnections: []
     customNetworkInterfaceName: '${privateEndpointName}-nic'
     subnet: {
-      id: StorageAccountSubnetId//'${virtualNetworks_zus1_iot_automation_sbx_vnet_externalid}/subnets/zus1-iot-automation-sbx-v2-aa-pe-sn'
+      id: storageSubnetResourceId
     }
     ipConfigurations: []
     customDnsConfigs: []
   }
 }
-
 
 //________________________________________________________________________________Where the light does not reach________________________________________________________________________________
 
@@ -279,7 +272,7 @@ resource privateEndpoints_zus1_iot_nisttest_sbx_v2_pe_name_resource 'Microsoft.N
   name: virtualNetworks_zus1_iot_nisttest_sbx_v2_vnet_name
   location: location
   tags: {
-    '${AgencyNameTag}': AgencyNameValue
+    '${SubscriptionNameTag}': AgencyNameValue
     '${BillingCodeTag}': BillingCodeTagValue
     '${EnvironmentTierTag}': EnvironmentTierValue
     '${ApplicationNameTag}': ApplicationNameValue
@@ -344,7 +337,7 @@ resource privateEndpoints_zus1_iot_nisttest_sbx_v2_pe_name_resource 'Microsoft.N
 }
  */
 
- /* resource virtualNetworks_zus1_iot_nisttest_sbx_v2_vnet_name_zus1_iot_nisttest_sbx_v2_snet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
+/* resource virtualNetworks_zus1_iot_nisttest_sbx_v2_vnet_name_zus1_iot_nisttest_sbx_v2_snet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
   name: '${virtualNetworks_zus1_iot_nisttest_sbx_v2_vnet_name}/zus1-iot-nisttest-sbx-v2-snet'
   properties: {
     addressPrefixes: [
@@ -385,12 +378,12 @@ resource privateEndpoints_zus1_iot_nisttest_sbx_v2_pe_name_resource 'Microsoft.N
 }
  */
 
- /*
+/*
  resource privateEndpoints_zus1_iot_nisttest_sbx_v2_pe_name_resource 'Microsoft.Network/privateEndpoints@2024-05-01' = {
   name: privateEndpoints_zus1_iot_nisttest_sbx_v2_pe_name
   location: location
   tags: {
-    '${AgencyNameTag}': AgencyNameValue
+    '${SubscriptionNameTag}': AgencyNameValue
     '${BillingCodeTag}': BillingCodeTagValue
     '${EnvironmentTierTag}': EnvironmentTierValue
     '${ApplicationNameTag}': ApplicationNameValue
@@ -433,12 +426,12 @@ resource privateEndpoints_zus1_iot_nisttest_sbx_v2_pe_name_resource 'Microsoft.N
 }
  */
 
- /* 
+/* 
  resource networkSecurityGroups_zus1_iot_nisttest_sbx_v2_nsg_name_resource 'Microsoft.Network/networkSecurityGroups@2024-05-01' = {
   name: networkSecurityGroups_zus1_iot_nisttest_sbx_v2_nsg_name
   location: location
   tags: {
-    '${AgencyNameTag}': AgencyNameValue
+    '${SubscriptionNameTag}': AgencyNameValue
     '${BillingCodeTag}': BillingCodeTagValue
     '${EnvironmentTierTag}': EnvironmentTierValue
     '${ApplicationNameTag}': ApplicationNameValue

@@ -164,6 +164,7 @@ module myBlazorApp 'br/public:avm/res/app/container-app:0.8.0' = {
 }
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = containerRegistry.outputs.loginServer
 output AZURE_RESOURCE_MY_BLAZOR_APP_ID string = myBlazorApp.outputs.resourceId
+output MANAGED_IDENTITY_PRINCIPAL_ID string = myBlazorAppIdentity.outputs.principalId
 
 //Additional Resources
 

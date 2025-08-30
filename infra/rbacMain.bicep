@@ -4,13 +4,13 @@
 param storageAccountResourceId string
 param principalId string
 
-module storageAccessRoles './storage-access-roles.bicep' = {
+/* module storageAccessRoles './storage-access-roles.bicep' = {
   name: 'storageAccessRoles'
   params: {
     storageAccountResourceId: storageAccountResourceId
     principalId: principalId
   }
-}
+} */
 
 // For reference, needs to be modified
 targetScope = 'subscription'
@@ -19,9 +19,9 @@ targetScope = 'subscription'
 //Set parameters for Principals(Users), Permissions, and Target Resources here.
 
 //You must use the Object ID here.
-param Principal1 string = '<principle1>' //FSSA Azure CAE Contributor-Prod
+param Principal1 string = principalId //Example: '72f988bf-86f1-41af-91ab-2d7cd011db47' for a user in Azure AD
 
-param Permission1 string = '<permission1>' //Contributor
+param Permission1 string = '/subscriptions/1af779b2-7582-4d0a-afee-4596ea7d480f/providers/Microsoft.Authorization/roleDefinitions/ba92f5b4-2d11-453d-a403-e96b0029c9fe' //Storage Blob Data Contributor
 
 //You must use the role definition here. It can be retrieved with: az role definition list --name "roleName" --query "[].{name:name, id:id}"
 param resource1 string = '<resource1>'

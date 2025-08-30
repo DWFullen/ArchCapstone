@@ -1,5 +1,6 @@
 {
     "analysisServicesServers": "as",
+    "antiMalwareSubscription": "ams",
     "apiManagementService": "apim",
     "appConfigurationStores": "appcs",
     "appManagedEnvironments": "cae",
@@ -7,6 +8,7 @@
     "containerAppImages": "fcai",
     "authorizationPolicyDefinitions": "policy",
     "automationAutomationAccounts": "aa",
+    "storageBlobContainers": "bc",
     "blueprintBlueprints": "bp",
     "blueprintBlueprintsArtifacts": "bpa",
     "cacheRedis": "redis",
@@ -86,6 +88,8 @@
     "networkNetworkWatchers": "nw",
     "networkPrivateDnsZones": "pdnsz",
     "networkPrivateLinkServices": "pl",
+    "privateEndpoint": "pe",
+    "privateEndpointConnection": "pec",
     "networkPublicIPAddresses": "pip",
     "networkPublicIPPrefixes": "ippre",
     "networkRouteFilters": "rf",

@@ -67,6 +67,14 @@ module resources 'resources.bicep' = {
   }
 }
 
+module rbacMain 'rbacMain.bicep' = {
+  name: 'rbacMain'
+  params: {
+    principalId: resources.outputs.MANAGED_IDENTITY_PRINCIPAL_ID
+    // ...other params...
+  }
+}
+
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = resources.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT
 output AZURE_RESOURCE_MY_BLAZOR_APP_ID string = resources.outputs.AZURE_RESOURCE_MY_BLAZOR_APP_ID
 output resourceGroupName string = rg.name
