@@ -187,6 +187,7 @@ module myBlazorApp 'br/public:avm/res/app/container-app:0.8.0' = {
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = containerRegistry.outputs.loginServer
 output AZURE_RESOURCE_MY_BLAZOR_APP_ID string = myBlazorApp.outputs.resourceId
 output MANAGED_IDENTITY_PRINCIPAL_ID string = myBlazorAppIdentity.outputs.principalId
+output MY_BLAZOR_APP_FQDN string = myBlazorApp.outputs.fqdn
 
 //Nist 800-53 rev 5 compliant storage account #####################################################################################################################################################################################################
 
@@ -285,6 +286,7 @@ resource eventGridSystemTopicAntimalwareSubscription 'Microsoft.EventGrid/system
   properties: {
     destination: {
       properties: {
+        endpointUrl: 'https://${myBlazorApp.outputs.fqdn}'
         maxEventsPerBatch: 1
         preferredBatchSizeInKilobytes: 64
         //azureActiveDirectoryTenantId: '33e01921-4d64-4f8c-a055-5bdaffd5e33d'
@@ -400,7 +402,7 @@ resource storageAccountBlobContainer 'Microsoft.Storage/storageAccounts/blobServ
 }
 
 resource nistStoragePrivateEndpoint 'Microsoft.Network/privateEndpoints@2024-05-01' = {
-  name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.privateEndpoint}'
+  name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.privateEndpoint}'
   dependsOn: [vnet]
   location: location
   tags: union(tags, {
