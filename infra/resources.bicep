@@ -37,12 +37,8 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-05-01' = {
     addressSpace: { addressPrefixes: ['10.0.0.0/16'] }
     subnets: [
       {
-        name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.appContainerApps}-${abbrs.networkVirtualNetworksSubnets}'
-        properties: { addressPrefix: '10.0.0.0/23' }
-      }
-      {
         name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.storageBlobContainers}-${abbrs.networkVirtualNetworksSubnets}'
-        properties: { addressPrefix: '10.0.2.0/23' }
+        properties: { addressPrefix: '10.0.0.0/24' }
       }
     ]
   }
@@ -91,7 +87,6 @@ module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.4.5
     name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.appManagedEnvironments}'
     location: location
     zoneRedundant: false
-    infrastructureSubnetId: vnet.properties.subnets[0].id //may want to update this to reference a subnet by name rather than by index
   }
 }
 
@@ -356,6 +351,7 @@ resource storageAccountFileService 'Microsoft.Storage/storageAccounts/fileServic
 
 resource storageAccountPrivateEndpointConnection 'Microsoft.Storage/storageAccounts/privateEndpointConnections@2024-01-01' = {
   parent: storageAccount
+  dependsOn: [nistStoragePrivateEndpoint]
   name: '${storageAccountName}-${abbrs.privateEndpointConnection}'
   properties: {
     privateEndpoint: {}
