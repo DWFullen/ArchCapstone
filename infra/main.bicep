@@ -76,6 +76,7 @@ module rbacMain 'rbacMain.bicep' = {
   params: {
     principalId: resources.outputs.MANAGED_IDENTITY_PRINCIPAL_ID
     storageAccountResourceId: resources.outputs.storageAccountId
+    resource1: rg.name
     // ...other params...
   }
 }
