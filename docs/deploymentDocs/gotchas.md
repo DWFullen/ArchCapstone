@@ -1,0 +1,1 @@
+Microsoft.ContainerService needs to be registered

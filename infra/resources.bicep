@@ -43,8 +43,8 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-05-01' = {
     ]
   }
 }
-output containerAppsSubnetResourceId string = '${vnet.id}/subnets/${vnet.properties.subnets[0].name}'
-output storagePrivateEndpointSubnetResourceId string = '${vnet.id}/subnets/${vnet.properties.subnets[1].name}'
+
+//output storagePrivateEndpointSubnetResourceId string = '${vnet.id}/subnets/${vnet.properties.subnets[0].name}'
 
 // Monitor application with Azure Monitor
 module monitoring 'br/public:avm/ptn/azd/monitoring:0.1.0' = {
@@ -281,7 +281,7 @@ resource eventGridSystemTopicAntimalwareSubscription 'Microsoft.EventGrid/system
   properties: {
     destination: {
       properties: {
-        endpointUrl: 'https://your-storage-event-handler-endpoint' // Replace with your Azure Function or Logic App endpoint
+        //endpointUrl: 'https://your-storage-event-handler-endpoint' // Replace with your Azure Function or Logic App endpoint
         maxEventsPerBatch: 1
         preferredBatchSizeInKilobytes: 64
         //azureActiveDirectoryTenantId: '33e01921-4d64-4f8c-a055-5bdaffd5e33d'
@@ -430,7 +430,7 @@ resource nistStoragePrivateEndpoint 'Microsoft.Network/privateEndpoints@2024-05-
     manualPrivateLinkServiceConnections: []
     customNetworkInterfaceName: '${privateEndpointName}nic'
     subnet: {
-      id: '${vnet.id}/subnets/${vnet.properties.subnets[1].name}' //find a way to call this by subnet name rather than index reference
+      id: '${vnet.id}/subnets/${vnet.properties.subnets[0].name}' //find a way to call this by subnet name rather than index reference
     }
     ipConfigurations: []
     customDnsConfigs: []
