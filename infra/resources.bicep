@@ -189,7 +189,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2024-01-01' = {
   tags: union(tags, {
     azdServiceName: 'nist-storage-account'
     zLocation: zLocation
-    azureSubscription: azureSubscription
+    azSubscriptionName: azureSubscription
     applicationName: applicationName
     devEnvironmentName: devEnvironmentName
     applicationVersion: applicationVersion
