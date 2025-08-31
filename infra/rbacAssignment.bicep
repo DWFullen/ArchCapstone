@@ -27,13 +27,13 @@ param roleDefinitionID string
 @description('Specifies the principal ID assigned to the role.')
 param principalId string
 
-var roleAssignmentName= guid(resourceGroup().id, principalId, roleDefinitionID)
+var roleAssignmentName = guid(resourceGroup().id, principalId, roleDefinitionID)
 
 resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: roleAssignmentName
   properties: {
     roleDefinitionId: roleDefinitionID
     principalId: principalId
-    principalType: 'User'
+    principalType: 'ServicePrincipal'
   }
 }
