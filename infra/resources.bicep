@@ -38,11 +38,11 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-05-01' = {
     subnets: [
       {
         name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.appContainerApps}-${abbrs.networkVirtualNetworksSubnets}'
-        properties: { addressPrefix: '10.0.1.0/24' }
+        properties: { addressPrefix: '10.0.0.0/23' }
       }
       {
         name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.storageBlobContainers}-${abbrs.networkVirtualNetworksSubnets}'
-        properties: { addressPrefix: '10.0.2.0/24' }
+        properties: { addressPrefix: '10.0.2.0/23' }
       }
     ]
   }
@@ -432,7 +432,7 @@ resource nistStoragePrivateEndpoint 'Microsoft.Network/privateEndpoints@2024-05-
       }
     ]
     manualPrivateLinkServiceConnections: []
-    customNetworkInterfaceName: '${privateEndpointName}-nic'
+    customNetworkInterfaceName: '${privateEndpointName}nic'
     subnet: {
       id: '${vnet.id}/subnets/${vnet.properties.subnets[1].name}' //find a way to call this by subnet name rather than index reference
     }
