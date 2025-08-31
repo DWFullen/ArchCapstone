@@ -258,7 +258,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2024-01-01' = {
   }
 }
 
-resource eventGridSystemTopic 'Microsoft.EventGrid/systemTopics@2025-02-15' = {
+/* resource eventGridSystemTopic 'Microsoft.EventGrid/systemTopics@2025-02-15' = {
   name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.eventGridDomainsTopics}'
   location: location
   tags: union(tags, {
@@ -274,8 +274,8 @@ resource eventGridSystemTopic 'Microsoft.EventGrid/systemTopics@2025-02-15' = {
     topicType: 'microsoft.storage.storageaccounts'
   }
 }
-
-resource eventGridSystemTopicAntimalwareSubscription 'Microsoft.EventGrid/systemTopics/eventSubscriptions@2025-02-15' = {
+ */
+/* resource eventGridSystemTopicAntimalwareSubscription 'Microsoft.EventGrid/systemTopics/eventSubscriptions@2025-02-15' = {
   parent: eventGridSystemTopic
   name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.antiMalwareSubscription}'
   properties: {
@@ -310,7 +310,7 @@ resource eventGridSystemTopicAntimalwareSubscription 'Microsoft.EventGrid/system
     }
   }
 }
-
+ */
 resource storageAccountBlobService 'Microsoft.Storage/storageAccounts/blobServices@2024-01-01' = {
   parent: storageAccount
   name: 'default'
