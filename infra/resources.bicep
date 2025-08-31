@@ -281,7 +281,7 @@ resource eventGridSystemTopicAntimalwareSubscription 'Microsoft.EventGrid/system
   properties: {
     destination: {
       properties: {
-        endpointUrl: 'https://${myBlazorApp.outputs.fqdn}'
+        endpointUrl: 'https://your-storage-event-handler-endpoint' // Replace with your Azure Function or Logic App endpoint
         maxEventsPerBatch: 1
         preferredBatchSizeInKilobytes: 64
         //azureActiveDirectoryTenantId: '33e01921-4d64-4f8c-a055-5bdaffd5e33d'
