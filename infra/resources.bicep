@@ -349,21 +349,6 @@ resource storageAccountFileService 'Microsoft.Storage/storageAccounts/fileServic
   }
 }
 
-resource storageAccountPrivateEndpointConnection 'Microsoft.Storage/storageAccounts/privateEndpointConnections@2024-01-01' = {
-  parent: storageAccount
-  dependsOn: [nistStoragePrivateEndpoint]
-  name: '${storageAccountName}-${abbrs.privateEndpointConnection}'
-  properties: {
-    privateEndpoint: {}
-    privateLinkServiceConnectionState: {
-      status: 'Approved'
-      description: 'Auto-Approved'
-      actionRequired: 'None'
-    }
-  }
-  // dependsOn: [virtualNetworks_zus1_iot_nisttest_sbx_v2_vnet_name_zus1_iot_nisttest_sbx_v2_snet]
-}
-
 resource storageAccountQueueService 'Microsoft.Storage/storageAccounts/queueServices@2024-01-01' = {
   parent: storageAccount
   name: 'default'
