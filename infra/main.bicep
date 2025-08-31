@@ -64,6 +64,10 @@ module resources 'resources.bicep' = {
     azureSubscription: azureSubscription
     devEnvironmentName: devEnvironmentName
     zLocation: zLocation
+    privateEndpointName: ''
+    storagePrivateEndpointName: ''
+    storageSubnetName: ''
+    storageSubnetResourceId: ''
   }
 }
 
@@ -71,6 +75,7 @@ module rbacMain 'rbacMain.bicep' = {
   name: 'rbacMain'
   params: {
     principalId: resources.outputs.MANAGED_IDENTITY_PRINCIPAL_ID
+    storageAccountResourceId: resources.outputs.storageAccountId
     // ...other params...
   }
 }
