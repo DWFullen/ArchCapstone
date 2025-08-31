@@ -29,6 +29,27 @@ param principalId string
 var abbrs = loadJsonContent('./abbreviations.json')
 var resourceToken = uniqueString(subscription().id, resourceGroup().id, location)
 
+// Virtual  Network
+resource vnet 'Microsoft.Network/virtualNetworks@2021-05-01' = {
+  name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.networkVirtualNetworks}'
+  location: location
+  properties: {
+    addressSpace: { addressPrefixes: ['10.0.0.0/16'] }
+    subnets: [
+      {
+        name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.appContainerApps}-${abbrs.networkVirtualNetworksSubnets}'
+        properties: { addressPrefix: '10.0.1.0/24' }
+      }
+      {
+        name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.storageBlobContainers}-${abbrs.networkVirtualNetworksSubnets}'
+        properties: { addressPrefix: '10.0.2.0/24' }
+      }
+    ]
+  }
+}
+output containerAppsSubnetResourceId string = '${vnet.id}/subnets/${vnet.properties.subnets[0].name}'
+output storagePrivateEndpointSubnetResourceId string = '${vnet.id}/subnets/${vnet.properties.subnets[1].name}'
+
 // Monitor application with Azure Monitor
 module monitoring 'br/public:avm/ptn/azd/monitoring:0.1.0' = {
   name: 'monitoring'
@@ -70,6 +91,7 @@ module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.4.5
     name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.appManagedEnvironments}'
     location: location
     zoneRedundant: false
+    infrastructureSubnetId: vnet.properties.subnets[0].id //may want to update this to reference a subnet by name rather than by index
   }
 }
 
@@ -246,7 +268,7 @@ resource eventGridSystemTopic 'Microsoft.EventGrid/systemTopics@2025-02-15' = {
   tags: union(tags, {
     azdServiceName: 'nist-eventgrid-systemtopic'
     zLocation: zLocation
-    azureSubscription: azureSubscription
+    azSubscription: azureSubscription
     applicationName: applicationName
     devEnvironmentName: devEnvironmentName
     applicationVersion: applicationVersion
@@ -379,11 +401,12 @@ resource storageAccountBlobContainer 'Microsoft.Storage/storageAccounts/blobServ
 
 resource nistStoragePrivateEndpoint 'Microsoft.Network/privateEndpoints@2024-05-01' = {
   name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.privateEndpoint}'
+  dependsOn: [vnet]
   location: location
   tags: union(tags, {
     azdServiceName: 'nist-storage-private-endpoint'
     zLocation: zLocation
-    azureSubscription: azureSubscription
+    azSubscription: azureSubscription
     applicationName: applicationName
     devEnvironmentName: devEnvironmentName
     applicationVersion: applicationVersion
@@ -409,7 +432,7 @@ resource nistStoragePrivateEndpoint 'Microsoft.Network/privateEndpoints@2024-05-
     manualPrivateLinkServiceConnections: []
     customNetworkInterfaceName: '${privateEndpointName}-nic'
     subnet: {
-      id: storageSubnetResourceId
+      id: '${vnet.id}/subnets/${vnet.properties.subnets[1].name}' //find a way to call this by subnet name rather than index reference
     }
     ipConfigurations: []
     customDnsConfigs: []
