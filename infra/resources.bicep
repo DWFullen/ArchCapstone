@@ -496,7 +496,7 @@ output acsConnectionString string = listKeys(azureCommunicationServices.id, azur
 
 // Azure Key Vault #####################################################################################################################################################################################################
 
-resource keyVault 'Microsoft.KeyVault/vaults@2024-05-01' = {
+resource keyVault 'Microsoft.KeyVault/vaults@2024-12-01-preview' = {
   name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.keyVaultVaults}'
   location: location
   tags: union(tags, {
