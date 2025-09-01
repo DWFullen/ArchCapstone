@@ -29,7 +29,7 @@ param principalId string
 var abbrs = loadJsonContent('./abbreviations.json')
 var resourceToken = uniqueString(subscription().id, resourceGroup().id, location)
 
-// Virtual  Network
+// Virtual  Network ##############################################################################################################################################################################################################################
 resource vnet 'Microsoft.Network/virtualNetworks@2021-05-01' = {
   name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.networkVirtualNetworks}'
   location: location
@@ -40,13 +40,17 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-05-01' = {
         name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.storageBlobContainers}-${abbrs.networkVirtualNetworksSubnets}'
         properties: { addressPrefix: '10.0.0.0/24' }
       }
+      {
+        name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.webSitesFunctions}-${abbrs.networkVirtualNetworksSubnets}'
+        properties: { addressPrefix: '10.0.1.0/24' }
+      }
     ]
   }
 }
 
 //output storagePrivateEndpointSubnetResourceId string = '${vnet.id}/subnets/${vnet.properties.subnets[0].name}'
 
-// Monitor application with Azure Monitor
+// Monitor application with Azure Monitor #######################################################################################################################################################################################################
 module monitoring 'br/public:avm/ptn/azd/monitoring:0.1.0' = {
   name: 'monitoring'
   params: {
@@ -58,7 +62,7 @@ module monitoring 'br/public:avm/ptn/azd/monitoring:0.1.0' = {
   }
 }
 
-// Container registry
+// Container registry ############################################################################################################################################################################################################################
 module containerRegistry 'br/public:avm/res/container-registry/registry:0.1.1' = {
   name: 'registry'
   params: {
@@ -79,7 +83,7 @@ module containerRegistry 'br/public:avm/res/container-registry/registry:0.1.1' =
   }
 }
 
-// Container apps environment
+// Container apps environment #####################################################################################################################################################################################################################
 module containerAppsEnvironment 'br/public:avm/res/app/managed-environment:0.4.5' = {
   name: 'container-apps-environment'
   params: {
@@ -187,22 +191,18 @@ output MY_BLAZOR_APP_FQDN string = myBlazorApp.outputs.fqdn
 //Nist 800-53 rev 5 compliant storage account #####################################################################################################################################################################################################
 
 var storageAccountName = toLower('${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.storageStorageAccounts}')
-// Removed unused parameter for system topic name
-//param location string
-//Private Endpoint Parameters
+
+// Move these parameters somewhere else !!!!!!!!!!!!
+//Private Endpoint Parameters !!!!!!!!!!!!!!!!!!!!!!
 param privateEndpointName string
 param storagePrivateEndpointName string
+param functionAppPrivateEndpointName string //!!!!!!
 param storageSubnetName string
 param storageSubnetResourceId string
-/* 
-param privateEndpoints_zus1_iot_nisttest_sbx_v2_pe_name string = 'zus1-iot-nisttest-sbx-v2-pe'
-param virtualNetworks_zus1_iot_nisttest_sbx_v2_vnet_name string = 'zus1-iot-nisttest-sbx-v2-vnet'
-param networkSecurityGroups_zus1_iot_nisttest_sbx_v2_nsg_name string = 'zus1-iot-nisttest-sbx-v2-nsg'
-param virtualNetworks_zus1_iot_automation_sbx_vnet_externalid string = '/subscriptions/5e75bd1d-92d0-464c-809f-0992c3cf0ebe/resourceGroups/zus1-iot-automation-sbx-v2-rg/providers/Microsoft.Network/virtualNetworks/zus1-iot-automation-sbx-vnet' 
-*/
+// Move these parameters somewhere else !!!!!!!!!!!!
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2024-01-01' = {
-  name: storageAccountName
+  name: storageAccountName // Ignore this. This is saying that the length might be too small. It isn't.
   location: location
   tags: union(tags, {
     azdServiceName: 'nist-storage-account'
@@ -214,7 +214,6 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2024-01-01' = {
   })
   sku: {
     name: 'Standard_LRS'
-    // Removed tier property (read-only)
   }
   kind: 'StorageV2'
   properties: {
@@ -258,63 +257,11 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2024-01-01' = {
   }
 }
 
-/* resource eventGridSystemTopic 'Microsoft.EventGrid/systemTopics@2025-02-15' = {
-  name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.eventGridDomainsTopics}'
-  location: location
-  tags: union(tags, {
-    azdServiceName: 'nist-eventgrid-systemtopic'
-    zLocation: zLocation
-    azSubscription: azureSubscription
-    applicationName: applicationName
-    devEnvironmentName: devEnvironmentName
-    applicationVersion: applicationVersion
-  })
-  properties: {
-    source: storageAccount.id
-    topicType: 'microsoft.storage.storageaccounts'
-  }
-}
- */
-/* resource eventGridSystemTopicAntimalwareSubscription 'Microsoft.EventGrid/systemTopics/eventSubscriptions@2025-02-15' = {
-  parent: eventGridSystemTopic
-  name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.antiMalwareSubscription}'
-  properties: {
-    destination: {
-      properties: {
-        //endpointUrl: 'https://your-storage-event-handler-endpoint' // Replace with your Azure Function or Logic App endpoint
-        maxEventsPerBatch: 1
-        preferredBatchSizeInKilobytes: 64
-        //azureActiveDirectoryTenantId: '33e01921-4d64-4f8c-a055-5bdaffd5e33d'
-        //azureActiveDirectoryApplicationIdOrUri: 'f1f8da5f-609a-401d-85b2-d498116b7265'
-      }
-      endpointType: 'WebHook'
-    }
-    filter: {
-      includedEventTypes: [
-        'Microsoft.Storage.BlobCreated'
-      ]
-      advancedFilters: [
-        {
-          values: [
-            'BlockBlob'
-          ]
-          operatorType: 'StringContains'
-          key: 'data.blobType'
-        }
-      ]
-    }
-    eventDeliverySchema: 'EventGridSchema'
-    retryPolicy: {
-      maxDeliveryAttempts: 30
-      eventTimeToLiveInMinutes: 1440
-    }
-  }
-}
- */
+//Event Grid resource used to live here. Moved to Bicep Graveyard in docs.
+
 resource storageAccountBlobService 'Microsoft.Storage/storageAccounts/blobServices@2024-01-01' = {
   parent: storageAccount
   name: 'default'
-  // Removed invalid sku block
   properties: {
     containerDeleteRetentionPolicy: {
       enabled: true
@@ -424,81 +371,124 @@ resource nistStoragePrivateEndpoint 'Microsoft.Network/privateEndpoints@2024-05-
 
 output storageAccountId string = storageAccount.id
 
-//Additional Resources
+// Function App #####################################################################################################################################################################################################
 
-//Storage Account
-/* module storageAccount 'br/public:avm/res/storage/storage-account:0.5.0' = {
-  name: 'storageAccount'
-  params: {
-    name: toLower('${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.storageAccounts}')
-    location: location
-    tags: tags
-    sku: 'Standard_LRS'
-    kind: 'StorageV2'
-    accessTier: 'Hot'
-    allowBlobPublicAccess: false
-    minimumTlsVersion: 'TLS1_2'
-    enableHierarchicalNamespace: false
-    roleAssignments: [
-      {
-        principalId: myBlazorAppIdentity.outputs.principalId
-        principalType: 'ServicePrincipal'
-        roleDefinitionIdOrName: subscriptionResourceId(
-          'Microsoft.Authorization/roleDefinitions',
-          'ba92f5b4-2d11-453d-a403-e96b0029c9fe' // Storage Blob Data Contributor
-        )
-      }
-    ]
-  }
-}
- */
+var appServicePlanName = toLower('${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.webServerFarms}${abbrs.webSitesFunctions}')
+var functionAppName = toLower('${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.webSitesFunctions}')
 
-/* // Storage Account for file storage and serving
-resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
-  name: '${uniqueString(resourceGroup().id)}storage'
-  location: resourceGroup().location
+resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
+  name: appServicePlanName
+  location: location
   sku: {
-    name: 'Standard_LRS'
+    name: 'FC1' // Flex Consumption Plan (Elastic Premium)
+    tier: 'ElasticPremium'
   }
-  kind: 'StorageV2'
-  properties: {
-    accessTier: 'Hot'
-    minimumTlsVersion: 'TLS1_2'
-    allowBlobPublicAccess: false
-    supportsHttpsTrafficOnly: true
-  }
+  kind: 'functionapp'
 }
 
-// Event Grid Topic for eventing
-resource eventGridTopic 'Microsoft.EventGrid/topics@2023-06-01-preview' = {
-  name: '${uniqueString(resourceGroup().id)}eventgrid'
-  location: resourceGroup().location
+resource functionApp 'Microsoft.Web/sites@2023-01-01' = {
+  name: functionAppName
+  location: location
+  kind: 'functionapp'
   properties: {
-    inputSchema: 'EventGridSchema'
-  }
-}
-
-// Event Grid Subscription to Storage Account (integration point)
-resource eventGridSubscription 'Microsoft.EventGrid/eventSubscriptions@2023-06-01-preview' = {
-  name: 'storage-file-requested'
-  scope: storageAccount.id
-  properties: {
-    destination: {
-      endpointType: 'WebHook'
-      properties: {
-        // TODO: Replace with your Azure Function or Logic App endpoint for sending email
-        endpointUrl: 'https://your-email-function-endpoint'
-      }
-    }
-    filter: {
-      includedEventTypes: [
-        'Microsoft.Storage.BlobCreated'
-        // Add other event types as needed
+    serverFarmId: appServicePlan.id
+    siteConfig: {
+      appSettings: [
+        {
+          name: 'AzureWebJobsStorage'
+          value: storageAccount.properties.primaryEndpoints.blob
+        }
+        {
+          name: 'FUNCTIONS_EXTENSION_VERSION'
+          value: '~4'
+        }
+        {
+          name: 'FUNCTIONS_WORKER_RUNTIME'
+          value: 'dotnet' // Change to 'node', 'python', etc. as needed
+        }
+        {
+          name: 'ACS_CONNECTION_STRING' //Used for connecting to Azure Communication Services, fill in later once you have the bicep built out for ACS
+          value: acsConnectionString
+        }
       ]
     }
+    httpsOnly: true
+  }
+  identity: {
+    type: 'SystemAssigned'
+  }
+  tags: {
+    'azd-service-name': functionAppName
   }
 }
 
-// TODO: Assign access to container app (managed identity or connection string)
-// TODO: Integrate with Azure Front Door in future for global routing and CDN
- */
+output functionAppPrincipalId string = functionApp.identity.principalId
+
+resource functionAppPrivateEndpoint 'Microsoft.Network/privateEndpoints@2024-05-01' = {
+  name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.privateEndpoint}-func'
+  dependsOn: [vnet]
+  location: location
+  tags: union(tags, {
+    azdServiceName: 'functionapp-private-endpoint'
+    zLocation: zLocation
+    azSubscription: azureSubscription
+    applicationName: applicationName
+    devEnvironmentName: devEnvironmentName
+    applicationVersion: applicationVersion
+  })
+  properties: {
+    privateLinkServiceConnections: [
+      {
+        name: functionAppName
+        id: resourceId('Microsoft.Network/privateLinkServiceConnections', functionAppPrivateEndpointName)
+        properties: {
+          privateLinkServiceId: functionApp.id
+          groupIds: [
+            'sites'
+          ]
+          privateLinkServiceConnectionState: {
+            status: 'Approved'
+            description: 'Auto-Approved'
+            actionsRequired: 'None'
+          }
+        }
+      }
+    ]
+    manualPrivateLinkServiceConnections: []
+    customNetworkInterfaceName: '${privateEndpointName}nic'
+    subnet: {
+      id: '${vnet.id}/subnets/${vnet.properties.subnets[1].name}' //find a way to call this by subnet name rather than index reference
+    }
+    ipConfigurations: []
+    customDnsConfigs: []
+  }
+}
+
+// Azure Communication Services #####################################################################################################################################################################################################
+var azureCommunicationServicesName = toLower('${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.azureCommunicationServices}')
+param dataLocation string = 'United States'
+
+resource azureCommunicationServices 'Microsoft.Communication/communicationServices@2025-05-01' = {
+  name: azureCommunicationServicesName
+  location: resourceGroup().location
+  tags: union(tags, {
+    azdServiceName: 'acs'
+    zLocation: zLocation
+    azSubscription: azureSubscription
+    applicationName: applicationName
+    devEnvironmentName: devEnvironmentName
+    applicationVersion: applicationVersion
+  })
+  identity: {
+    type: 'SystemAssigned' // or 'UserAssigned' if you want to use a managed identity
+    // userAssignedIdentities: { '/subscriptions/<subId>/resourceGroups/<rg>/providers/Microsoft.ManagedIdentity/userAssignedIdentities/<identityName>': {} }
+  }
+  properties: {
+    dataLocation: dataLocation
+    disableLocalAuth: true // recommended for security
+    linkedDomains: [] // add custom domains if needed, update this later when we apply our custom domains to the container app
+    publicNetworkAccess: 'Disabled' // or 'Disabled' for private endpoint only
+  }
+}
+
+output AZURE_COMMUNICATION_SERVICES_NAME string = azureCommunicationServices.name

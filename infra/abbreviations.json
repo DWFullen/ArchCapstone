@@ -8,6 +8,7 @@
     "containerAppImages": "fcai",
     "authorizationPolicyDefinitions": "policy",
     "automationAutomationAccounts": "aa",
+    "azureCommunicationServices": "acs",
     "storageBlobContainers": "bc",
     "blueprintBlueprints": "bp",
     "blueprintBlueprintsArtifacts": "bpa",
@@ -133,9 +134,9 @@
     "synapseWorkspacesSqlPoolsDedicated": "syndp",
     "synapseWorkspacesSqlPoolsSpark": "synsp",
     "timeSeriesInsightsEnvironments": "tsi",
-    "webServerFarms": "plan",
+    "webServerFarms": "asp",
     "webSitesAppService": "app",
     "webSitesAppServiceEnvironment": "ase",
-    "webSitesFunctions": "func",
+    "webSitesFunctions": "fa",
     "webStaticSites": "stapp"
 }

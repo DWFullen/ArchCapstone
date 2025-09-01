@@ -77,6 +77,7 @@ module rbacMain 'rbacMain.bicep' = {
     principalId: resources.outputs.MANAGED_IDENTITY_PRINCIPAL_ID
     storageAccountResourceId: resources.outputs.storageAccountId
     resource1: rg.name
+    resource2: resources.outputs.AZURE_COMMUNICATION_SERVICES_NAME
     // ...other params...
   }
 }
