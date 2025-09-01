@@ -68,6 +68,7 @@ module resources 'resources.bicep' = {
     storagePrivateEndpointName: ''
     storageSubnetName: ''
     storageSubnetResourceId: ''
+    functionAppPrivateEndpointName: ''
   }
 }
 
@@ -78,6 +79,7 @@ module rbacMain 'rbacMain.bicep' = {
     storageAccountResourceId: resources.outputs.storageAccountId
     resource1: rg.name
     resource2: resources.outputs.AZURE_COMMUNICATION_SERVICES_NAME
+    resource3: resources.outputs.AZURE_KEY_VAULT_NAME
     // ...other params...
   }
 }

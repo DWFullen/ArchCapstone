@@ -63,7 +63,7 @@ az ad user show --id "user@website.com" --query objectId --output tsv
 # Get group object ID
 az ad group show --group "UserGroup" --query objectId --output tsv
 # Get role definition by name
-az role definition list --name "Communication Services User" --query "[0].{Name:name, Id:id}" --output table
+az role definition list --name "Key Vault Secrets User" --query "[0].{Name:name, Id:id}" --output table
 # Get role definition details
 az role definition show --name "RoleName" --output json
 # Assign role to Entra object
