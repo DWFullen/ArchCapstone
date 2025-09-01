@@ -408,7 +408,7 @@ resource functionApp 'Microsoft.Web/sites@2023-01-01' = {
         }
         {
           name: 'ACS_CONNECTION_STRING' //Used for connecting to Azure Communication Services, fill in later once you have the bicep built out for ACS
-          value: acsConnectionString
+          value: 'https://${keyVault.name}.${environment().suffixes.keyvaultDns}/secrets/ACS-ConnectionString'
         }
       ]
     }
@@ -492,3 +492,32 @@ resource azureCommunicationServices 'Microsoft.Communication/communicationServic
 }
 
 output AZURE_COMMUNICATION_SERVICES_NAME string = azureCommunicationServices.name
+output acsConnectionString string = listKeys(azureCommunicationServices.id, azureCommunicationServices.apiVersion).primaryConnectionString
+
+// Azure Key Vault #####################################################################################################################################################################################################
+
+resource keyVault 'Microsoft.KeyVault/vaults@2024-05-01' = {
+  name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.keyVaultVaults}'
+  location: location
+  tags: union(tags, {
+    azdServiceName: 'keyvault'
+    zLocation: zLocation
+    azSubscription: azureSubscription
+    applicationName: applicationName
+    devEnvironmentName: devEnvironmentName
+    applicationVersion: applicationVersion
+  })
+  properties: {
+    sku: {
+      family: 'A'
+      name: 'standard'
+    }
+    tenantId: subscription().tenantId
+    accessPolicies: []
+    value: azureCommunicationServices.listKeys().primaryConnectionString
+  }
+}
+
+output AZURE_KEY_VAULT_NAME string = keyVault.name
+output keyVaultUri string = keyVault.properties.vaultUri
+
