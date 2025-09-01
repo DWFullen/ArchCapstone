@@ -470,7 +470,7 @@ param dataLocation string = 'United States'
 
 resource azureCommunicationServices 'Microsoft.Communication/communicationServices@2025-05-01' = {
   name: azureCommunicationServicesName
-  location: resourceGroup().location
+  location: 'global' //This is the only valid location for Communication Services
   tags: union(tags, {
     azdServiceName: 'acs'
     zLocation: zLocation
