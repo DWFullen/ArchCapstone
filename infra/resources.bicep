@@ -378,7 +378,7 @@ var functionAppName = toLower('${zLocation}-${azureSubscription}-${applicationNa
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: appServicePlanName
-  location: location
+  location: 'eastus'
   sku: {
     name: 'FC1' // Flex Consumption Plan (Elastic Premium)
     tier: 'ElasticPremium'
@@ -497,7 +497,7 @@ output acsConnectionString string = listKeys(azureCommunicationServices.id, azur
 // Azure Key Vault #####################################################################################################################################################################################################
 
 resource keyVault 'Microsoft.KeyVault/vaults@2024-12-01-preview' = {
-  name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.keyVaultVaults}'
+  name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.keyVaultVaults}'
   location: location
   tags: union(tags, {
     azdServiceName: 'keyvault'
