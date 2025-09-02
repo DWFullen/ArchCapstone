@@ -391,11 +391,11 @@ module appServicePlan 'br/public:avm/res/web/serverfarm:0.1.1' = {
   }
 }
 
-resource functionApp 'Microsoft.Web/sites@2023-01-01' = {
+resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
   name: functionAppName
   location: location
   kind: 'functionapp'
-  properties: {
+  properties: any({
     serverFarmId: appServicePlan.outputs.resourceId
     siteConfig: {
       appSettings: [
@@ -417,8 +417,28 @@ resource functionApp 'Microsoft.Web/sites@2023-01-01' = {
         }
       ]
     }
+    functionAppConfig: {
+      deployment: {
+        storage: {
+          type: 'blobContainer'
+          value: 'https://${storageAccount.name}.blob.core.windows.net/app-package-${functionAppName}'
+          authentication: {
+            type: 'StorageAccountConnectionString'
+            storageAccountConnectionStringName: 'AzureWebJobsStorage'
+          }
+        }
+      }
+      scaleAndConcurrency: {
+        maximumInstanceCount: 100
+        instanceMemoryMB: 512
+      }
+      runtime: {
+        name: 'dotnet-isolated'
+        version: '8.0'
+      }
+    }
     httpsOnly: true
-  }
+  })
   identity: {
     type: 'SystemAssigned'
   }
