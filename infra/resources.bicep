@@ -376,14 +376,25 @@ output storageAccountId string = storageAccount.id
 var appServicePlanName = toLower('${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.webServerFarms}${abbrs.webSitesFunctions}')
 var functionAppName = toLower('${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.webSitesFunctions}')
 
-resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
+resource appServicePlan 'Microsoft.Web/serverfarms@2018-11-01' = {
   name: appServicePlanName
-  location: 'westus2' // Only available in these regions westus2, northeurope, westeurope
+  location: 'eastus' // Change to supported region for FC1
   sku: {
     name: 'FC1' // Flex Consumption Plan (Elastic Premium)
     tier: 'ElasticPremium'
   }
   kind: 'functionapp'
+  properties: {
+    zoneRedundant: false
+    elasticScaleEnabled: true
+    // Add other permissible properties as needed
+    // hostingEnvironmentProfile: null
+    // kubeEnvironmentProfile: null
+    // freeOfferExpirationTime: null
+    // spotExpirationTime: null
+    // targetWorkerSizeId: null
+    // workerTierName: null
+  }
 }
 
 resource functionApp 'Microsoft.Web/sites@2023-01-01' = {
