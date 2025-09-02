@@ -40,12 +40,12 @@ param RBACUser1Map object = {
   rbac2: {
     roleDefinitionID: Permission2
     principalId: Principal1
-    resourceGroup: resource2
+    resourceGroup: resource1
   }
   rbac3: {
     roleDefinitionID: Permission3
     principalId: Principal1
-    resourceGroup: resource3
+    resourceGroup: resource1
   }
 }
 
