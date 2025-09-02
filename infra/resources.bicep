@@ -378,7 +378,7 @@ var functionAppName = toLower('${zLocation}-${azureSubscription}-${applicationNa
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2018-11-01' = {
   name: appServicePlanName
-  location: 'eastus' // Change to supported region for FC1
+  location: 'westus2' // Change to supported region for FC1
   sku: {
     tier: 'FlexConsumption'
     name: 'FC1'
