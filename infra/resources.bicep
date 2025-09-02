@@ -380,8 +380,8 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2018-11-01' = {
   name: appServicePlanName
   location: 'eastus' // Change to supported region for FC1
   sku: {
-    name: 'FC1' // Flex Consumption Plan (Elastic Premium)
-    tier: 'ElasticPremium'
+    tier: 'FlexConsumption'
+    name: 'FC1'
   }
   kind: 'functionapp'
   properties: {
