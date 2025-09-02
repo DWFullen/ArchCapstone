@@ -473,7 +473,7 @@ resource functionAppPrivateEndpoint 'Microsoft.Network/privateEndpoints@2024-05-
       }
     ]
     manualPrivateLinkServiceConnections: []
-    customNetworkInterfaceName: '${privateEndpointName}nic'
+    customNetworkInterfaceName: '${functionAppName}-nic'
     subnet: {
       id: '${vnet.id}/subnets/${vnet.properties.subnets[1].name}' //find a way to call this by subnet name rather than index reference
     }
