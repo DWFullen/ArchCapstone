@@ -520,7 +520,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2024-12-01-preview' = {
 output AZURE_KEY_VAULT_NAME string = keyVault.name
 output keyVaultUri string = keyVault.properties.vaultUri
 
-resource acsConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2024-05-01' = {
+resource acsConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2024-12-01-preview' = {
   parent: keyVault
   dependsOn: [keyVault, azureCommunicationServices]
   name: 'ACS-ConnectionString'
