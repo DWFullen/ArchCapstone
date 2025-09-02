@@ -373,27 +373,21 @@ output storageAccountId string = storageAccount.id
 
 // Function App #####################################################################################################################################################################################################
 
-var appServicePlanName = toLower('${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.webServerFarms}${abbrs.webSitesFunctions}')
+var functionPlanName = toLower('${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.webServerFarms}${abbrs.webSitesFunctions}')
 var functionAppName = toLower('${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.webSitesFunctions}')
 
-resource appServicePlan 'Microsoft.Web/serverfarms@2018-11-01' = {
-  name: appServicePlanName
-  location: 'westus2' // Change to supported region for FC1
-  sku: {
-    tier: 'FlexConsumption'
-    name: 'FC1'
-  }
-  kind: 'functionapp'
-  properties: {
+module appServicePlan 'br/public:avm/res/web/serverfarm:0.1.1' = {
+  name: 'appserviceplan'
+  params: {
+    name: !empty(functionPlanName) ? functionPlanName : '${abbrs.webServerFarms}${resourceToken}'
+    sku: {
+      name: 'FC1'
+      tier: 'FlexConsumption'
+    }
+    reserved: true
+    location: location
+    tags: tags
     zoneRedundant: false
-    elasticScaleEnabled: true
-    // Add other permissible properties as needed
-    // hostingEnvironmentProfile: null
-    // kubeEnvironmentProfile: null
-    // freeOfferExpirationTime: null
-    // spotExpirationTime: null
-    // targetWorkerSizeId: null
-    // workerTierName: null
   }
 }
 
