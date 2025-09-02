@@ -460,7 +460,7 @@ resource functionAppPrivateEndpoint 'Microsoft.Network/privateEndpoints@2024-05-
         name: functionAppName
         id: resourceId('Microsoft.Network/privateLinkServiceConnections', functionAppPrivateEndpointName)
         properties: {
-          privateLinkServiceId: functionApp.id
+          privateLinkServiceId: functionApp.outputs.resourceId
           groupIds: [
             'sites'
           ]
