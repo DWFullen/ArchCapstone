@@ -391,40 +391,24 @@ module appServicePlan 'br/public:avm/res/web/serverfarm:0.1.1' = {
   }
 }
 
-resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
+module functionApp 'br/public:avm/res/web/site:0.16.0' = {
   name: functionAppName
-  location: location
-  kind: 'functionapp'
-  properties: any({
-    serverFarmId: appServicePlan.outputs.resourceId
-    siteConfig: {
-      appSettings: [
-        {
-          name: 'AzureWebJobsStorage'
-          value: storageAccount.properties.primaryEndpoints.blob
-        }
-        {
-          name: 'FUNCTIONS_EXTENSION_VERSION'
-          value: '~4'
-        }
-        {
-          name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: 'dotnet' // Change to 'node', 'python', etc. as needed
-        }
-        {
-          name: 'ACS_CONNECTION_STRING'
-          value: '@Microsoft.KeyVault(SecretUri=https://${keyVault.name}.${environment().suffixes.keyvaultDns}/secrets/ACS-ConnectionString)'
-        }
-      ]
+  params: {
+    kind: 'functionapp,linux'
+    name: functionAppName
+    location: location
+    tags: union(tags, { 'azd-service-name': 'api' })
+    serverFarmResourceId: appServicePlan.outputs.resourceId
+    managedIdentities: {
+      systemAssigned: true
     }
     functionAppConfig: {
       deployment: {
         storage: {
           type: 'blobContainer'
-          value: 'https://${storageAccount.name}.blob.core.windows.net/app-package-${functionAppName}'
+          value: '${storageAccount.properties.primaryEndpoints.blob}${functionAppName}'
           authentication: {
-            type: 'StorageAccountConnectionString'
-            storageAccountConnectionStringName: 'AzureWebJobsStorage'
+            type: 'SystemAssignedIdentity'
           }
         }
       }
@@ -437,17 +421,26 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
         version: '8.0'
       }
     }
-    httpsOnly: true
-  })
-  identity: {
-    type: 'SystemAssigned'
-  }
-  tags: {
-    'azd-service-name': functionAppName
+    siteConfig: {
+      alwaysOn: false
+    }
+    configs: [
+      {
+        name: 'appsettings'
+        properties: {
+          AzureWebJobsStorage__credential: 'managedidentity'
+          AzureWebJobsStorage__blobServiceUri: 'https://${storageAccount.name}.blob.${environment().suffixes.storage}'
+          AzureWebJobsStorage__queueServiceUri: 'https://${storageAccount.name}.queue.${environment().suffixes.storage}'
+          AzureWebJobsStorage__tableServiceUri: 'https://${storageAccount.name}.table.${environment().suffixes.storage}'
+          APPLICATIONINSIGHTS_CONNECTION_STRING: monitoring.outputs.applicationInsightsConnectionString
+          APPLICATIONINSIGHTS_AUTHENTICATION_STRING: 'Authorization=AAD'
+        }
+      }
+    ]
   }
 }
 
-output functionAppPrincipalId string = functionApp.identity.principalId
+output functionAppPrincipalId string = functionApp.outputs.?systemAssignedMIPrincipalId ?? ''
 
 resource functionAppPrivateEndpoint 'Microsoft.Network/privateEndpoints@2024-05-01' = {
   name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.privateEndpoint}-func'
