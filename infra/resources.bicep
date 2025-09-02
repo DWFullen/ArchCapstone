@@ -378,7 +378,7 @@ var functionAppName = toLower('${zLocation}-${azureSubscription}-${applicationNa
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: appServicePlanName
-  location: 'eastus'
+  location: 'westus2' // Only available in these regions westus2, northeurope, westeurope
   sku: {
     name: 'FC1' // Flex Consumption Plan (Elastic Premium)
     tier: 'ElasticPremium'
