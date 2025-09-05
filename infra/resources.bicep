@@ -546,3 +546,25 @@ resource acsConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2024-12-01
     value: azureCommunicationServices.listKeys().primaryConnectionString
   }
 }
+
+@secure()
+param BTCPAY_API_KEY string
+
+@secure()
+param BTCPAY_API_ID string
+
+resource btcpayApiKeySecret 'Microsoft.KeyVault/vaults/secrets@2024-12-01-preview' = {
+  parent: keyVault
+  name: 'BTCPayApiKey'
+  properties: {
+    value: BTCPAY_API_KEY
+  }
+}
+
+resource btcpayApiIdSecret 'Microsoft.KeyVault/vaults/secrets@2024-12-01-preview' = {
+  parent: keyVault
+  name: 'BTCPayApiId'
+  properties: {
+    value: BTCPAY_API_ID
+  }
+}

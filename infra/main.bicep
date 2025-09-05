@@ -29,6 +29,13 @@ param myBlazorAppExists bool
 @secure()
 param myBlazorAppDefinition object
 
+@description('BTCPay API ID')
+param BTCPAY_API_ID string
+
+@description('BTCPay API Key')
+@secure()
+param BTCPAY_API_KEY string
+
 @description('Id of the user or app to assign application roles')
 param principalId string
 
@@ -69,6 +76,8 @@ module resources 'resources.bicep' = {
     storageSubnetName: ''
     storageSubnetResourceId: ''
     functionAppPrivateEndpointName: ''
+    BTCPAY_API_ID: BTCPAY_API_ID
+    BTCPAY_API_KEY: BTCPAY_API_KEY
   }
 }
 
