@@ -56,6 +56,12 @@
       },
       "azureSubscription": {
         "value": "${AZURE_SUBSCRIPTION}"
+      },
+      "BTCPAY_API_ID": {
+        "value": "${BTCPAY_API_ID}"
+      },
+      "BTCPAY_API_KEY": {
+        "value": "${BTCPAY_API_KEY}"
       }
     }
 }
