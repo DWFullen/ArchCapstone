@@ -73,7 +73,7 @@ jobs:
       - name: Provision Infrastructure
         run: |
           echo "ENVIRONMENT_NAME=$ENVIRONMENT_NAME" >> $GITHUB_ENV
-          azd provision --no-prompt
+          azd provision --no-prompt --parameters BTCPAY_API_ID="$BTCPAY_API_ID" BTCPAY_API_KEY="$BTCPAY_API_KEY"
         env:
           AZD_INITIAL_ENVIRONMENT_CONFIG: ${{ secrets.AZD_INITIAL_ENVIRONMENT_CONFIG }}
           ENVIRONMENT_NAME: ${{ vars.AZURE_DEV_ENVIRONMENT_NAME }}
