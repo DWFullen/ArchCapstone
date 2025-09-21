@@ -10,6 +10,8 @@ Break down the following large tasks into a detailed action plan:
 
 ### 1. Secure the Connection between Luna Node and Azure Application
 - [ ] 1.1 Identify all Azure endpoints/services Luna Node must access (Function App, Storage, etc.)
+  - [ ] CAE 48.216.147.214
+  - [ ] 
 - [ ] 1.2 Document Luna Node’s public IP(s) and required ports/protocols
 - [ ] 1.3 Restrict Azure endpoints to allow only Luna Node’s IP (NSG, firewall, or access rules)
 - [ ] 1.4 Evaluate and, if feasible, set up VPN or Azure Private Link for private connectivity
