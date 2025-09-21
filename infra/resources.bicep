@@ -41,8 +41,8 @@ param afdEndpointName string = 'rebelcorpo-endpoint'
 @description('Custom domain to serve (must be a root or subdomain you control)')
 param customDomainName string = 'rebelcorpo.com'
 
-@description('Container App public hostname (FQDN) to use as the default origin, e.g., myapp.<hash>.<region>.azurecontainerapps.io')
-param containerAppHostname string
+// @description('Container App public hostname (FQDN) to use as the default origin, e.g., myapp.<hash>.<region>.azurecontainerapps.io')
+// param containerAppHostname string
 
 @description('Function App default hostname, e.g., myfunc.azurewebsites.net')
 param functionAppHostname string
@@ -296,6 +296,8 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2024-01-01' = {
   }
 }
 
+output storageStaticWebsiteHostname string = storageAccount.properties.primaryEndpoints.web
+
 //Event Grid resource used to live here. Moved to Bicep Graveyard in docs.
 
 resource storageAccountBlobService 'Microsoft.Storage/storageAccounts/blobServices@2024-01-01' = {
@@ -480,6 +482,7 @@ module functionApp 'br/public:avm/res/web/site:0.16.0' = {
 }
 
 output functionAppPrincipalId string = functionApp.outputs.?systemAssignedMIPrincipalId ?? ''
+output functionAppHostName string = functionApp.outputs.defaultHostname
 
 resource functionAppPrivateEndpoint 'Microsoft.Network/privateEndpoints@2024-05-01' = {
   name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.privateEndpoint}-func'
@@ -704,10 +707,10 @@ resource ogStorage 'Microsoft.Cdn/profiles/originGroups@2024-02-01' = {
 resource originContainer 'Microsoft.Cdn/profiles/originGroups/origins@2024-02-01' = {
   name: '${afdProfile.name}/${ogContainer.name}/origin-container'
   properties: {
-    hostName: containerAppHostname
+    hostName: myBlazorApp.outputs.fqdn //pulls output from container app module
     httpPort: 80
     httpsPort: 443
-    originHostHeader: containerAppHostname // ensure correct Host header is sent
+    originHostHeader: myBlazorApp.outputs.fqdn // ensure correct Host header is sent
     priority: 1
     weight: 1000
     enabledState: 'Enabled'
