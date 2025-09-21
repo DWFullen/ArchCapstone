@@ -44,11 +44,11 @@ param customDomainName string = 'rebelcorpo.com'
 // @description('Container App public hostname (FQDN) to use as the default origin, e.g., myapp.<hash>.<region>.azurecontainerapps.io')
 // param containerAppHostname string
 
-@description('Function App default hostname, e.g., myfunc.azurewebsites.net')
-param functionAppHostname string
+// @description('Function App default hostname, e.g., myfunc.azurewebsites.net')
+// param functionAppHostname string
 
-@description('Storage Static Website hostname (no scheme), e.g., mystorage.z13.web.core.windows.net. If you are not using Static Website, you can point to a CDN-enabled blob endpoint instead.')
-param storageStaticWebsiteHostname string
+// @description('Storage Static Website hostname (no scheme), e.g., mystorage.z13.web.core.windows.net. If you are not using Static Website, you can point to a CDN-enabled blob endpoint instead.')
+// param storageStaticWebsiteHostname string
 
 @description('Optional: Health probe path for origins')
 param healthProbePath string = '/'
