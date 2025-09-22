@@ -482,7 +482,7 @@ module functionApp 'br/public:avm/res/web/site:0.16.0' = {
 }
 
 output functionAppPrincipalId string = functionApp.outputs.?systemAssignedMIPrincipalId ?? ''
-output functionAppHostName string = functionApp.outputs.defaultHostname
+output functionAppHostname string = functionApp.outputs.defaultHostname
 
 resource functionAppPrivateEndpoint 'Microsoft.Network/privateEndpoints@2024-05-01' = {
   name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.privateEndpoint}-func'
@@ -812,6 +812,10 @@ resource wafPolicy 'Microsoft.Network/frontdoorWebApplicationFirewallPolicies@20
 resource afdSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2024-02-01' = if (enableWaf) {
   parent: afdProfile
   name: 'waf-security-policy'
+  dependsOn: [
+    afdCustomDomain
+    wafPolicy
+  ]
   properties: {
     parameters: {
       type: 'WebApplicationFirewall'
@@ -842,6 +846,11 @@ resource afdSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2024-02-01' 
 resource routeDefault 'Microsoft.Cdn/profiles/routes@2024-02-01' = {
   parent: afdProfile
   name: 'route-default'
+  dependsOn: [
+    afdEndpoint
+    ogContainer
+    afdCustomDomain
+  ]
   properties: {
     // For routes, endpointName expects the short endpoint name, not "profile/endpoint"
     endpointName: afdEndpointName
@@ -858,6 +867,11 @@ resource routeDefault 'Microsoft.Cdn/profiles/routes@2024-02-01' = {
 resource routeApi 'Microsoft.Cdn/profiles/routes@2024-02-01' = {
   parent: afdProfile
   name: 'route-api'
+  dependsOn: [
+    afdEndpoint
+    ogContainer
+    afdCustomDomain
+  ]
   properties: {
     endpointName: afdEndpointName
     originGroup: { id: ogFunction.id }
@@ -873,6 +887,11 @@ resource routeApi 'Microsoft.Cdn/profiles/routes@2024-02-01' = {
 resource routeStatic 'Microsoft.Cdn/profiles/routes@2024-02-01' = {
   parent: afdProfile
   name: 'route-static'
+  dependsOn: [
+    afdEndpoint
+    ogContainer
+    afdCustomDomain
+  ]
   properties: {
     endpointName: afdEndpointName
     originGroup: { id: ogStorage.id }
