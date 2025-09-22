@@ -78,6 +78,8 @@ module resources 'resources.bicep' = {
     functionAppPrivateEndpointName: ''
     BTCPAY_API_ID: BTCPAY_API_ID
     BTCPAY_API_KEY: BTCPAY_API_KEY
+    functionAppHostname: ''
+    storageStaticWebsiteHostname: ''
   }
 }
 
