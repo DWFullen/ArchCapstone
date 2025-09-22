@@ -45,8 +45,7 @@ param customDomainName string = 'rebelcorpo.com'
 // param containerAppHostname string
 
 @description('Function App default hostname, e.g., myfunc.azurewebsites.net')
-param functionAppHostname string
-
+// param functionAppHostname string
 @description('Storage Static Website hostname (no scheme), e.g., mystorage.z13.web.core.windows.net. If you are not using Static Website, you can point to a CDN-enabled blob endpoint instead.')
 param storageStaticWebsiteHostname string
 
@@ -482,7 +481,7 @@ module functionApp 'br/public:avm/res/web/site:0.16.0' = {
 }
 
 output functionAppPrincipalId string = functionApp.outputs.?systemAssignedMIPrincipalId ?? ''
-output functionAppHostname string = functionApp.outputs.defaultHostname
+var functionAppHostname = functionApp.outputs.defaultHostname
 
 resource functionAppPrivateEndpoint 'Microsoft.Network/privateEndpoints@2024-05-01' = {
   name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.privateEndpoint}-func'
@@ -730,7 +729,7 @@ resource originFunction 'Microsoft.Cdn/profiles/originGroups/origins@2024-02-01'
   }
 }
 
-resource originStorage 'Microsoft.Cdn/profiles/originGroups/origins@2024-02-01' = {
+/* resource originStorage 'Microsoft.Cdn/profiles/originGroups/origins@2024-02-01' = {
   name: '${afdProfile.name}/${ogStorage.name}/origin-storage'
   properties: {
     hostName: storageStaticWebsiteHostname
@@ -741,7 +740,7 @@ resource originStorage 'Microsoft.Cdn/profiles/originGroups/origins@2024-02-01' 
     weight: 1000
     enabledState: 'Enabled'
   }
-}
+} */
 
 // Custom domain for rebelcorpo.com (bind to the endpoint)
 // IMPORTANT: You must add required DNS TXT/CNAME records in your DNS zone to validate and map the domain.
