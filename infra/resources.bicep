@@ -36,7 +36,7 @@ var resourceToken = uniqueString(subscription().id, resourceGroup().id, location
 param afdProfileName string = 'rebelcorpo-afd'
 
 @description('Azure Front Door endpoint name')
-param afdEndpointName string = 'rebelcorpo-endpoint'
+param afdEndpointName string = 'rebelcorpo-endpoint' //Update this to use your naming convention
 
 @description('Custom domain to serve (must be a root or subdomain you control)')
 param customDomainName string = 'rebelcorpo.com'
@@ -620,15 +620,14 @@ resource btcpayApiIdSecret 'Microsoft.KeyVault/vaults/secrets@2024-12-01-preview
 // ---------------------------
 
 // AFD profile (global)
-resource afdProfile 'Microsoft.Cdn/profiles@2024-02-01' = {
-  name: afdProfileName
+resource afdProfile 'Microsoft.Cdn/profiles@2023-07-01-preview' = {
+  name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}'
   location: 'global'
   sku: {
     name: afdSkuName
   }
   tags: {
-    app: 'rebelcorpo'
-    component: 'frontdoor'
+    app: '${applicationName}'
   }
 }
 
@@ -636,7 +635,7 @@ resource afdProfile 'Microsoft.Cdn/profiles@2024-02-01' = {
 // Note: Child resource naming uses "parentName/childName"
 resource afdEndpoint 'Microsoft.Cdn/profiles/afdEndpoints@2024-02-01' = {
   parent: afdProfile
-  name: afdEndpointName
+  name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoorEndpoint}'
   location: 'global'
   properties: {
     enabledState: 'Enabled'
@@ -761,8 +760,9 @@ resource afdCustomDomain 'Microsoft.Cdn/profiles/customDomains@2024-02-01' = {
 // Uses Microsoft Default Rule Set (OWASP) and an optional rate-limiting custom rule.
 // Note: Bot Manager rules require AFD Premium (not included here).
 resource wafPolicy 'Microsoft.Network/frontdoorWebApplicationFirewallPolicies@2022-05-01' = if (enableWaf) {
-  name: wafPolicyName
+  name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.networkFrontdoorWebApplicationFirewallPolicies}'
   location: 'Global'
+  dependsOn: [afdProfile]
   properties: {
     policySettings: {
       enabledState: 'Enabled' // Toggle entire WAF on/off
