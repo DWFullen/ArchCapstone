@@ -620,7 +620,7 @@ resource btcpayApiIdSecret 'Microsoft.KeyVault/vaults/secrets@2024-12-01-preview
 // ---------------------------
 
 // AFD profile (global)
-resource afdProfile 'Microsoft.Cdn/profiles@2023-07-01-preview' = {
+resource afdProfile 'Microsoft.Cdn/profiles@2024-02-01' = {
   name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}'
   location: 'global'
   sku: {
