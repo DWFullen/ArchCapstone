@@ -620,7 +620,7 @@ resource btcpayApiIdSecret 'Microsoft.KeyVault/vaults/secrets@2024-12-01-preview
 // ---------------------------
 
 // AFD profile (global)
-resource afdProfile 'Microsoft.Cdn/profiles@2024-02-01' = {
+resource afdProfile 'Microsoft.Cdn/profiles@2023-07-01-preview' = {
   name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}'
   location: 'global'
   sku: {
@@ -633,7 +633,7 @@ resource afdProfile 'Microsoft.Cdn/profiles@2024-02-01' = {
 
 // AFD endpoint (public entry point)
 // Note: Child resource naming uses "parentName/childName"
-resource afdEndpoint 'Microsoft.Cdn/profiles/afdEndpoints@2024-02-01' = {
+resource afdEndpoint 'Microsoft.Cdn/profiles/afdEndpoints@2023-07-01-preview' = {
   parent: afdProfile
   name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoorEndpoint}'
   location: 'global'
@@ -643,7 +643,7 @@ resource afdEndpoint 'Microsoft.Cdn/profiles/afdEndpoints@2024-02-01' = {
 }
 
 // Origin Groups (one per backend for independent health/probes)
-resource ogContainer 'Microsoft.Cdn/profiles/originGroups@2024-02-01' = {
+resource ogContainer 'Microsoft.Cdn/profiles/originGroups@2023-07-01-preview' = {
   parent: afdProfile
   name: 'og-container'
   properties: {
@@ -662,7 +662,7 @@ resource ogContainer 'Microsoft.Cdn/profiles/originGroups@2024-02-01' = {
   }
 }
 
-resource ogFunction 'Microsoft.Cdn/profiles/originGroups@2024-02-01' = {
+resource ogFunction 'Microsoft.Cdn/profiles/originGroups@2023-07-01-preview' = {
   name: 'og-function'
   parent: afdProfile
   properties: {
@@ -681,7 +681,7 @@ resource ogFunction 'Microsoft.Cdn/profiles/originGroups@2024-02-01' = {
   }
 }
 
-resource ogStorage 'Microsoft.Cdn/profiles/originGroups@2024-02-01' = {
+resource ogStorage 'Microsoft.Cdn/profiles/originGroups@2023-07-01-preview' = {
   parent: afdProfile
   name: 'og-storage'
   properties: {
@@ -702,7 +702,7 @@ resource ogStorage 'Microsoft.Cdn/profiles/originGroups@2024-02-01' = {
 
 // Origins (hostnames of your backends)
 // Note: These are public origins. If you need private origins, use AFD Premium with Private Link origins.
-resource originContainer 'Microsoft.Cdn/profiles/originGroups/origins@2024-02-01' = {
+resource originContainer 'Microsoft.Cdn/profiles/originGroups/origins@2023-07-01-preview' = {
   name: '${afdProfile.name}/${ogContainer.name}/origin-container'
   properties: {
     hostName: myBlazorApp.outputs.fqdn //pulls output from container app module
@@ -715,7 +715,7 @@ resource originContainer 'Microsoft.Cdn/profiles/originGroups/origins@2024-02-01
   }
 }
 
-resource originFunction 'Microsoft.Cdn/profiles/originGroups/origins@2024-02-01' = {
+resource originFunction 'Microsoft.Cdn/profiles/originGroups/origins@2023-07-01-preview' = {
   name: '${afdProfile.name}/${ogFunction.name}/origin-function'
   properties: {
     hostName: functionAppHostname
@@ -728,7 +728,7 @@ resource originFunction 'Microsoft.Cdn/profiles/originGroups/origins@2024-02-01'
   }
 }
 
-/* resource originStorage 'Microsoft.Cdn/profiles/originGroups/origins@2024-02-01' = {
+/* resource originStorage 'Microsoft.Cdn/profiles/originGroups/origins@2023-07-01-preview' = {
   name: '${afdProfile.name}/${ogStorage.name}/origin-storage'
   properties: {
     hostName: storageStaticWebsiteHostname
@@ -743,7 +743,7 @@ resource originFunction 'Microsoft.Cdn/profiles/originGroups/origins@2024-02-01'
 
 // Custom domain for rebelcorpo.com (bind to the endpoint)
 // IMPORTANT: You must add required DNS TXT/CNAME records in your DNS zone to validate and map the domain.
-resource afdCustomDomain 'Microsoft.Cdn/profiles/customDomains@2024-02-01' = {
+resource afdCustomDomain 'Microsoft.Cdn/profiles/customDomains@2023-07-01-preview' = {
   name: '${replace(customDomainName, '.', '-')}-domain'
   parent: afdProfile
   properties: {
@@ -808,7 +808,7 @@ resource wafPolicy 'Microsoft.Network/frontdoorWebApplicationFirewallPolicies@20
 }
 
 // Associate WAF policy with your AFD custom domain (so traffic to rebelcorpo.com is protected)
-resource afdSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2024-02-01' = if (enableWaf) {
+resource afdSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2023-07-01-preview' = if (enableWaf) {
   parent: afdProfile
   name: 'waf-security-policy'
   dependsOn: [
@@ -842,7 +842,7 @@ resource afdSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2024-02-01' 
 
 // Default route to Container App: /*
 // tip: Add additional domain bindings to routes via the `domains` property.
-resource routeDefault 'Microsoft.Cdn/profiles/routes@2024-02-01' = {
+resource routeDefault 'Microsoft.Cdn/profiles/routes@2023-07-01-preview' = {
   parent: afdProfile
   name: 'route-default'
   dependsOn: [
@@ -863,7 +863,7 @@ resource routeDefault 'Microsoft.Cdn/profiles/routes@2024-02-01' = {
   }
 }
 
-resource routeApi 'Microsoft.Cdn/profiles/routes@2024-02-01' = {
+resource routeApi 'Microsoft.Cdn/profiles/routes@2023-07-01-preview' = {
   parent: afdProfile
   name: 'route-api'
   dependsOn: [
@@ -883,7 +883,7 @@ resource routeApi 'Microsoft.Cdn/profiles/routes@2024-02-01' = {
   }
 }
 
-resource routeStatic 'Microsoft.Cdn/profiles/routes@2024-02-01' = {
+resource routeStatic 'Microsoft.Cdn/profiles/routes@2023-07-01-preview' = {
   parent: afdProfile
   name: 'route-static'
   dependsOn: [
