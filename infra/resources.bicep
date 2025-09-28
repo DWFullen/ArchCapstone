@@ -714,14 +714,17 @@ resource fdWafPolicy 'Microsoft.Network/FrontDoorWebApplicationFirewallPolicies@
       enabledState: 'Enabled'
       mode: 'Prevention'
     }
-    managedRules: {
-      managedRuleSets: [
-        {
-          ruleSetType: 'Microsoft_DefaultRuleSet'
-          ruleSetVersion: '2.0'
+    // Managed rule sets require Premium_AzureFrontDoor. Make conditional to avoid errors on Standard SKU.
+    managedRules: afdSkuName == 'Premium_AzureFrontDoor'
+      ? {
+          managedRuleSets: [
+            {
+              ruleSetType: 'Microsoft_DefaultRuleSet'
+              ruleSetVersion: '2.0'
+            }
+          ]
         }
-      ]
-    }
+      : null
     customRules: {
       rules: (rateLimitThreshold > 0)
         ? [
