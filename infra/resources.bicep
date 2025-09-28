@@ -705,7 +705,7 @@ module afdProfile 'br/public:avm/res/cdn/profile:0.8.0' = {
 }
 
 // Front Door Standard/Premium WAF policy (Microsoft.Network - Front Door WAF)
-resource fdWafPolicy 'Microsoft.Network/FrontDoorWebApplicationFirewallPolicies@2022-05-01' = if (enableWaf) {
+resource fdWafPolicy 'Microsoft.Network/FrontDoorWebApplicationFirewallPolicies@2020-11-01' = if (enableWaf) {
   name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.networkFrontdoorWebApplicationFirewallPolicies}'
   location: 'global'
   sku: {
@@ -757,12 +757,12 @@ resource fdWafPolicy 'Microsoft.Network/FrontDoorWebApplicationFirewallPolicies@
 }
 
 // Bring the AFD profile into scope as an existing resource so we can create child resources under it
-resource afdProfileExisting 'Microsoft.Cdn/profiles@2024-02-01' existing = if (enableWaf) {
+resource afdProfileExisting 'Microsoft.Cdn/profiles@2021-06-01' existing = if (enableWaf) {
   name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}'
 }
 
 // Associate WAF policy with AFD (using security policy under the AFD profile)
-resource afdSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2024-02-01' = if (enableWaf && enableCustomDomain) {
+resource afdSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2021-06-01' = if (enableWaf && enableCustomDomain) {
   parent: afdProfileExisting
   name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontdoorWebApplicationFirewallPolicies}'
   properties: {
