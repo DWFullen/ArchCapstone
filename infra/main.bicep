@@ -36,9 +36,6 @@ param BTCPAY_API_ID string
 @secure()
 param BTCPAY_API_KEY string
 
-@description('Id of the user or app to assign application roles')
-param principalId string
-
 // Tags that should be applied to all resources.
 // 
 // Note that 'azd-service-name' tags should be applied separately to service host resources.
@@ -63,7 +60,6 @@ module resources 'resources.bicep' = {
   params: {
     location: location
     tags: tags
-    principalId: principalId
     myBlazorAppExists: myBlazorAppExists
     myBlazorAppDefinition: myBlazorAppDefinition
     applicationName: applicationName
@@ -74,12 +70,10 @@ module resources 'resources.bicep' = {
     privateEndpointName: ''
     storagePrivateEndpointName: ''
     storageSubnetName: ''
-    storageSubnetResourceId: ''
     functionAppPrivateEndpointName: ''
     BTCPAY_API_ID: BTCPAY_API_ID
     BTCPAY_API_KEY: BTCPAY_API_KEY
     //functionAppHostname: ''
-    storageStaticWebsiteHostname: ''
   }
 }
 
