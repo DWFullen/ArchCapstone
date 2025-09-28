@@ -702,10 +702,10 @@ module afdProfile 'br/public:avm/res/cdn/profile:0.8.0' = {
   }
 }
 
-// Front Door WAF policy (separate from AVM module for now)
-resource wafPolicy 'Microsoft.Network/frontdoorWebApplicationFirewallPolicies@2022-05-01' = if (enableWaf) {
+// Front Door Standard/Premium WAF policy (Microsoft.Cdn)
+resource cdnWafPolicy 'Microsoft.Cdn/cdnWebApplicationFirewallPolicies@2024-02-01' = if (enableWaf) {
   name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.networkFrontdoorWebApplicationFirewallPolicies}'
-  location: 'Global'
+  location: 'global'
   properties: {
     policySettings: {
       enabledState: 'Enabled'
@@ -735,7 +735,7 @@ resource wafPolicy 'Microsoft.Network/frontdoorWebApplicationFirewallPolicies@20
                   matchVariable: 'RemoteAddr'
                   operator: 'IPMatch'
                   negateCondition: false
-                  matchValue: [
+                  matchValues: [
                     '0.0.0.0/0'
                     '::/0'
                   ]
@@ -762,7 +762,7 @@ resource afdSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2024-02-01' 
     parameters: {
       type: 'WebApplicationFirewall'
       wafPolicy: {
-        id: wafPolicy.id
+        id: cdnWafPolicy.id
       }
       associations: [
         {
