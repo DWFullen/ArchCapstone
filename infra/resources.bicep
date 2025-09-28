@@ -702,8 +702,8 @@ module afdProfile 'br/public:avm/res/cdn/profile:0.8.0' = {
   }
 }
 
-// Front Door Standard/Premium WAF policy (Microsoft.Cdn)
-resource cdnWafPolicy 'Microsoft.Cdn/cdnWebApplicationFirewallPolicies@2024-02-01' = if (enableWaf) {
+// Front Door Standard/Premium WAF policy (Microsoft.Network - Front Door WAF)
+resource fdWafPolicy 'Microsoft.Network/FrontDoorWebApplicationFirewallPolicies@2022-05-01' = if (enableWaf) {
   name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.networkFrontdoorWebApplicationFirewallPolicies}'
   location: 'global'
   sku: {
@@ -718,31 +718,32 @@ resource cdnWafPolicy 'Microsoft.Cdn/cdnWebApplicationFirewallPolicies@2024-02-0
       managedRuleSets: [
         {
           ruleSetType: 'Microsoft_DefaultRuleSet'
-          ruleSetVersion: '2.1'
+          ruleSetVersion: '2.0'
         }
       ]
     }
-    rateLimitRules: {
+    customRules: {
       rules: (rateLimitThreshold > 0)
         ? [
             {
-              name: 'RateLimitByIP'
+              name: 'ApplyRateLimit'
+              priority: 100
               enabledState: 'Enabled'
-              priority: 1
-              rateLimitDurationInMinutes: 1
+              ruleType: 'RateLimitRule'
               rateLimitThreshold: rateLimitThreshold
+              rateLimitDurationInMinutes: 1
+              action: 'Block'
               matchConditions: [
+                // Front Door requires a match condition for rate limit rules. Use a negated documentation range to effectively match all.
                 {
                   matchVariable: 'RemoteAddr'
                   operator: 'IPMatch'
-                  negateCondition: false
+                  negateCondition: true
                   matchValue: [
-                    '0.0.0.0/0'
-                    '::/0'
+                    '192.0.2.0/24' // IANA documentation range
                   ]
                 }
               ]
-              action: 'Block'
             }
           ]
         : []
@@ -763,7 +764,7 @@ resource afdSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2024-02-01' 
     parameters: {
       type: 'WebApplicationFirewall'
       wafPolicy: {
-        id: cdnWafPolicy.id
+        id: fdWafPolicy.id
       }
       associations: [
         {
