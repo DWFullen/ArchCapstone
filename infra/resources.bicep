@@ -608,6 +608,8 @@ resource btcpayApiIdSecret 'Microsoft.KeyVault/vaults/secrets@2024-12-01-preview
 
 // Variables for dynamic hostnames
 var containerAppHostname = myBlazorApp.outputs.fqdn
+// AFD endpoint name used in AVM module
+var afdEndpointName = '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoorEndpoint}'
 
 // Azure Front Door using AVM module
 module afdProfile 'br/public:avm/res/cdn/profile:0.8.0' = {
@@ -775,11 +777,7 @@ resource afdSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2021-06-01' 
         {
           domains: [
             {
-              id: resourceId(
-                'Microsoft.Cdn/profiles/customDomains',
-                afdProfileExisting.name,
-                replace(customDomainName, '.', '-')
-              )
+              id: resourceId('Microsoft.Cdn/profiles/afdEndpoints', afdProfileExisting.name, afdEndpointName)
             }
           ]
           // patternsToMatch defaults to all paths if omitted
