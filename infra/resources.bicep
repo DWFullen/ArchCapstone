@@ -33,7 +33,10 @@ var resourceToken = uniqueString(subscription().id, resourceGroup().id, location
 // Parameters -AFD
 // ---------------------------
 @description('Custom domain to serve (must be a root or subdomain you control)')
-param customDomainName string = 'rebelcorpo.com'
+param customDomainName string = 'www.rebelcorpo.com'
+
+@description('Enable custom domain creation (set false to skip if domain already exists)')
+param enableCustomDomain bool = true
 
 @description('Storage Static Website hostname (no scheme), e.g., mystorage.z13.web.core.windows.net. If you are not using Static Website, you can point to a CDN-enabled blob endpoint instead.')
 param storageStaticWebsiteHostname string
@@ -613,14 +616,16 @@ module afdProfile 'br/public:avm/res/cdn/profile:0.8.0' = {
     sku: afdSkuName
     location: 'global'
 
-    // Custom domain configuration
-    customDomains: [
-      {
-        certificateType: 'ManagedCertificate'
-        hostName: customDomainName
-        name: replace(customDomainName, '.', '-')
-      }
-    ]
+    // Custom domain configuration (conditional)
+    customDomains: enableCustomDomain
+      ? [
+          {
+            certificateType: 'ManagedCertificate'
+            hostName: customDomainName
+            name: replace(customDomainName, '.', '-')
+          }
+        ]
+      : []
 
     // Origin groups configuration
     originGroups: [
@@ -669,21 +674,21 @@ module afdProfile 'br/public:avm/res/cdn/profile:0.8.0' = {
         routes: [
           {
             name: 'route-default'
-            customDomainNames: [replace(customDomainName, '.', '-')]
+            customDomainNames: enableCustomDomain ? [replace(customDomainName, '.', '-')] : []
             originGroupName: 'og-container'
             supportedProtocols: ['Https']
             httpsRedirect: enableHttpsOnly ? 'Enabled' : 'Disabled'
-            linkToDefaultDomain: 'Disabled'
+            linkToDefaultDomain: enableCustomDomain ? 'Disabled' : 'Enabled'
             patternsToMatch: ['/*']
             forwardingProtocol: 'MatchRequest'
           }
           {
             name: 'route-api'
-            customDomainNames: [replace(customDomainName, '.', '-')]
+            customDomainNames: enableCustomDomain ? [replace(customDomainName, '.', '-')] : []
             originGroupName: 'og-function'
             supportedProtocols: ['Https']
             httpsRedirect: enableHttpsOnly ? 'Enabled' : 'Disabled'
-            linkToDefaultDomain: 'Disabled'
+            linkToDefaultDomain: enableCustomDomain ? 'Disabled' : 'Enabled'
             patternsToMatch: ['/api/*']
             forwardingProtocol: 'MatchRequest'
           }
@@ -744,9 +749,15 @@ resource wafPolicy 'Microsoft.Network/frontdoorWebApplicationFirewallPolicies@20
   }
 }
 
-// Associate WAF policy with AFD (using separate security policy resource)
-resource afdSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2024-02-01' = if (enableWaf) {
-  name: '${afdProfile.name}/waf-security-policy'
+// Bring the AFD profile into scope as an existing resource so we can create child resources under it
+resource afdProfileExisting 'Microsoft.Cdn/profiles@2024-02-01' existing = if (enableWaf) {
+  name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}'
+}
+
+// Associate WAF policy with AFD (using security policy under the AFD profile)
+resource afdSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2024-02-01' = if (enableWaf && enableCustomDomain) {
+  parent: afdProfileExisting
+  name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontdoorWebApplicationFirewallPolicies}'
   properties: {
     parameters: {
       type: 'WebApplicationFirewall'
@@ -757,9 +768,14 @@ resource afdSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2024-02-01' 
         {
           domains: [
             {
-              id: '${afdProfile.outputs.resourceId}/customDomains/${replace(customDomainName, '.', '-')}'
+              id: resourceId(
+                'Microsoft.Cdn/profiles/customDomains',
+                afdProfileExisting.name,
+                replace(customDomainName, '.', '-')
+              )
             }
           ]
+          // patternsToMatch defaults to all paths if omitted
         }
       ]
     }
