@@ -706,11 +706,13 @@ module afdProfile 'br/public:avm/res/cdn/profile:0.8.0' = {
 resource cdnWafPolicy 'Microsoft.Cdn/cdnWebApplicationFirewallPolicies@2024-02-01' = if (enableWaf) {
   name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.networkFrontdoorWebApplicationFirewallPolicies}'
   location: 'global'
+  sku: {
+    name: afdSkuName
+  }
   properties: {
     policySettings: {
       enabledState: 'Enabled'
       mode: 'Prevention'
-      requestBodyCheck: 'Enabled'
     }
     managedRules: {
       managedRuleSets: [
@@ -720,14 +722,13 @@ resource cdnWafPolicy 'Microsoft.Cdn/cdnWebApplicationFirewallPolicies@2024-02-0
         }
       ]
     }
-    customRules: (rateLimitThreshold > 0)
-      ? {
-          rules: [
+    rateLimitRules: {
+      rules: (rateLimitThreshold > 0)
+        ? [
             {
               name: 'RateLimitByIP'
               enabledState: 'Enabled'
               priority: 1
-              ruleType: 'RateLimitRule'
               rateLimitDurationInMinutes: 1
               rateLimitThreshold: rateLimitThreshold
               matchConditions: [
@@ -735,7 +736,7 @@ resource cdnWafPolicy 'Microsoft.Cdn/cdnWebApplicationFirewallPolicies@2024-02-0
                   matchVariable: 'RemoteAddr'
                   operator: 'IPMatch'
                   negateCondition: false
-                  matchValues: [
+                  matchValue: [
                     '0.0.0.0/0'
                     '::/0'
                   ]
@@ -744,8 +745,8 @@ resource cdnWafPolicy 'Microsoft.Cdn/cdnWebApplicationFirewallPolicies@2024-02-0
               action: 'Block'
             }
           ]
-        }
-      : {}
+        : []
+    }
   }
 }
 
