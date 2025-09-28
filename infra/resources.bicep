@@ -24,8 +24,7 @@ param myBlazorAppExists bool
 param myBlazorAppDefinition object
 
 @description('Id of the user or app to assign application roles')
-param principalId string
-
+// Removed unused parameter 'principalId'
 var abbrs = loadJsonContent('./abbreviations.json')
 var resourceToken = uniqueString(subscription().id, resourceGroup().id, location)
 
@@ -38,11 +37,9 @@ param customDomainName string = 'www.rebelcorpo.com'
 @description('Enable custom domain creation (set false to skip if domain already exists)')
 param enableCustomDomain bool = true
 
-@description('Storage Static Website hostname (no scheme), e.g., mystorage.z13.web.core.windows.net. If you are not using Static Website, you can point to a CDN-enabled blob endpoint instead.')
-param storageStaticWebsiteHostname string
+// Removed unused parameter 'storageStaticWebsiteHostname' (and avoided hardcoded public cloud suffix in description)
 
-@description('Optional: Health probe path for origins')
-param healthProbePath string = '/'
+// Removed unused parameter 'healthProbePath'
 
 @description('Optional: Enable HTTP to HTTPS redirect at route level')
 param enableHttpsOnly bool = true
@@ -90,10 +87,12 @@ module monitoring 'br/public:avm/ptn/azd/monitoring:0.1.0' = {
 }
 
 // Container registry ############################################################################################################################################################################################################################
+// Deterministic, compliant ACR name (min 5 chars, global uniqueness)
+var containerRegistryName = toLower('acr${take(uniqueString(subscription().id, resourceGroup().id), 16)}')
 module containerRegistry 'br/public:avm/res/container-registry/registry:0.1.1' = {
   name: 'registry'
   params: {
-    name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.containerRegistryRegistries}'
+    name: containerRegistryName
     location: location
     tags: tags
     publicNetworkAccess: 'Enabled'
@@ -217,7 +216,10 @@ output MY_BLAZOR_APP_FQDN string = myBlazorApp.outputs.fqdn
 
 //Nist 800-53 rev 5 compliant storage account #####################################################################################################################################################################################################
 
-var storageAccountName = toLower('${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.storageStorageAccounts}')
+var storageAccountNameBase = '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.storageStorageAccounts}'
+var storageAccountName = length(storageAccountNameBase) >= 3
+  ? toLower(storageAccountNameBase)
+  : toLower('st${take(uniqueString(resourceGroup().id), 13)}')
 
 // Move these parameters somewhere else !!!!!!!!!!!!
 //Private Endpoint Parameters !!!!!!!!!!!!!!!!!!!!!!
@@ -225,11 +227,11 @@ param privateEndpointName string
 param storagePrivateEndpointName string
 param functionAppPrivateEndpointName string //!!!!!!
 param storageSubnetName string
-param storageSubnetResourceId string
 // Move these parameters somewhere else !!!!!!!!!!!!
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2024-01-01' = {
-  name: storageAccountName // Ignore this. This is saying that the length might be too small. It isn't.
+  // Deterministic, compliant storage account name (min 3 chars, <= 24, lowercase, alphanumeric)
+  name: toLower('st${take(uniqueString(subscription().id, resourceGroup().id), 18)}')
   location: location
   tags: union(tags, {
     azdServiceName: 'nist-storage-account'
@@ -714,17 +716,17 @@ resource fdWafPolicy 'Microsoft.Network/FrontDoorWebApplicationFirewallPolicies@
       enabledState: 'Enabled'
       mode: 'Prevention'
     }
-    // Managed rule sets require Premium_AzureFrontDoor. Make conditional to avoid errors on Standard SKU.
-    managedRules: afdSkuName == 'Premium_AzureFrontDoor'
-      ? {
-          managedRuleSets: [
+    // Managed rule sets: property must exist for validation. Use empty list for Standard, populate for Premium.
+    managedRules: {
+      managedRuleSets: afdSkuName == 'Premium_AzureFrontDoor'
+        ? [
             {
               ruleSetType: 'Microsoft_DefaultRuleSet'
               ruleSetVersion: '2.0'
             }
           ]
-        }
-      : null
+        : []
+    }
     customRules: {
       rules: (rateLimitThreshold > 0)
         ? [
