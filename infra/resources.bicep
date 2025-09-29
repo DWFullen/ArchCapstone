@@ -706,28 +706,27 @@ module afdProfile 'br/public:avm/res/cdn/profile:0.8.0' = {
   }
 }
 
-// Front Door Standard/Premium WAF policy (Microsoft.Network - Front Door WAF)
-resource fdWafPolicy 'Microsoft.Network/FrontDoorWebApplicationFirewallPolicies@2020-11-01' = if (enableWaf) {
-  name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.networkFrontdoorWebApplicationFirewallPolicies}'
-  location: 'global'
-  sku: {
-    name: afdSkuName
-  }
-  properties: {
+// Front Door Standard/Premium WAF policy using AVM module
+module fdWafPolicy 'br/public:avm/res/network/front-door-web-application-firewall-policy:0.3.0' = if (enableWaf) {
+  name: 'fdWafPolicy'
+  params: {
+    // Resource name
+    name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.networkFrontdoorWebApplicationFirewallPolicies}'
+    // SKU must match AFD SKU
+    sku: afdSkuName
+    location: 'global'
     policySettings: {
       enabledState: 'Enabled'
       mode: 'Prevention'
     }
-    // Managed rule sets: property must exist for validation. Use empty list for Standard, populate for Premium.
+    // Provide managed rules explicitly to avoid BotManager on Standard
     managedRules: {
-      managedRuleSets: afdSkuName == 'Premium_AzureFrontDoor'
-        ? [
-            {
-              ruleSetType: 'Microsoft_DefaultRuleSet'
-              ruleSetVersion: '2.0'
-            }
-          ]
-        : []
+      managedRuleSets: [
+        {
+          ruleSetType: 'Microsoft_DefaultRuleSet'
+          ruleSetVersion: '2.1'
+        }
+      ]
     }
     customRules: {
       rules: (rateLimitThreshold > 0)
@@ -741,13 +740,12 @@ resource fdWafPolicy 'Microsoft.Network/FrontDoorWebApplicationFirewallPolicies@
               rateLimitDurationInMinutes: 1
               action: 'Block'
               matchConditions: [
-                // Front Door requires a match condition for rate limit rules. Use a negated documentation range to effectively match all.
                 {
                   matchVariable: 'RemoteAddr'
                   operator: 'IPMatch'
                   negateCondition: true
                   matchValue: [
-                    '192.0.2.0/24' // IANA documentation range
+                    '192.0.2.0/24'
                   ]
                 }
               ]
@@ -755,6 +753,7 @@ resource fdWafPolicy 'Microsoft.Network/FrontDoorWebApplicationFirewallPolicies@
           ]
         : []
     }
+    tags: tags
   }
 }
 
@@ -771,7 +770,7 @@ resource afdSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2021-06-01' 
     parameters: {
       type: 'WebApplicationFirewall'
       wafPolicy: {
-        id: fdWafPolicy.id
+        id: fdWafPolicy.outputs.resourceId
       }
       associations: [
         {
@@ -785,6 +784,10 @@ resource afdSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2021-06-01' 
       ]
     }
   }
+  dependsOn: [
+    fdWafPolicy
+    afdProfile
+  ]
 }
 
 // ---------------------------
