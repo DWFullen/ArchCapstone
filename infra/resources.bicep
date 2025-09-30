@@ -699,6 +699,42 @@ module afdProfile 'br/public:avm/res/cdn/profile:0.8.0' = {
       }
     ]
 
+    // Security policy (WAF association) embedded in AVM module to ensure correct schema
+    securityPolicies: enableWaf
+      ? [
+          {
+            name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontdoorWebApplicationFirewallPolicies}'
+            wafPolicyResourceId: fdWafPolicyExisting.id
+            associations: [
+              {
+                domains: enableCustomDomain
+                  ? [
+                      {
+                        id: resourceId(
+                          'Microsoft.Cdn/profiles/customDomains',
+                          '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}',
+                          replace(customDomainName, '.', '-')
+                        )
+                      }
+                    ]
+                  : [
+                      {
+                        id: resourceId(
+                          'Microsoft.Cdn/profiles/afdEndpoints',
+                          '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}',
+                          afdEndpointName
+                        )
+                      }
+                    ]
+                patternsToMatch: [
+                  '/*'
+                ]
+              }
+            ]
+          }
+        ]
+      : []
+
     tags: {
       app: applicationName
     }
@@ -760,41 +796,6 @@ module fdWafPolicy 'br/public:avm/res/network/front-door-web-application-firewal
 // Bring the WAF policy into scope as an existing resource to safely reference its resourceId
 resource fdWafPolicyExisting 'Microsoft.Network/FrontDoorWebApplicationFirewallPolicies@2020-11-01' existing = if (enableWaf) {
   name: fdWafPolicyName
-}
-
-// Bring the AFD profile into scope as an existing resource so we can create child resources under it
-resource afdProfileExisting 'Microsoft.Cdn/profiles@2021-06-01' existing = if (enableWaf) {
-  name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}'
-}
-
-// Associate WAF policy with AFD (using security policy under the AFD profile)
-resource afdSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2025-04-15' = if (enableWaf) {
-  parent: afdProfileExisting
-  name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontdoorWebApplicationFirewallPolicies}'
-  properties: {
-    parameters: {
-      type: 'WebApplicationFirewall'
-      wafPolicy: {
-        id: fdWafPolicyExisting.id
-      }
-      associations: [
-        {
-          domains: [
-            {
-              id: resourceId('Microsoft.Cdn/profiles/afdEndpoints', afdProfileExisting.name, afdEndpointName)
-            }
-          ]
-          patternsToMatch: [
-            '/*'
-          ]
-        }
-      ]
-    }
-  }
-  dependsOn: [
-    fdWafPolicy
-    afdProfile
-  ]
 }
 
 // ---------------------------
