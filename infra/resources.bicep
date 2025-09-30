@@ -768,7 +768,7 @@ resource afdProfileExisting 'Microsoft.Cdn/profiles@2021-06-01' existing = if (e
 }
 
 // Associate WAF policy with AFD (using security policy under the AFD profile)
-resource afdSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2021-06-01' = if (enableWaf) {
+resource afdSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2025-04-15' = if (enableWaf) {
   parent: afdProfileExisting
   name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontdoorWebApplicationFirewallPolicies}'
   properties: {
