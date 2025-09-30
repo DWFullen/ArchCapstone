@@ -707,7 +707,7 @@ module afdProfile 'br/public:avm/res/cdn/profile:0.8.0' = {
       ? [
           {
             name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontdoorWebApplicationFirewallPolicies}'
-            wafPolicyResourceId: fdWafPolicyArmId
+            wafPolicyResourceId: fdWafPolicyExisting.id
             associations: [
               {
                 domains: [
@@ -737,7 +737,12 @@ module afdProfile 'br/public:avm/res/cdn/profile:0.8.0' = {
 // Front Door Standard/Premium WAF policy using AVM module
 var fdWafPolicyName = '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.networkFrontdoorWebApplicationFirewallPolicies}'
 // Explicitly construct the WAF policy ARM resource ID with the provider segment expected by AFD security policy validation
-var fdWafPolicyArmId = '/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name}/providers/Microsoft.Network/frontdoorwebapplicationfirewallpolicies/${fdWafPolicyName}'
+var fdWafPolicyArmId = resourceId('Microsoft.Network/frontdoorWebApplicationFirewallPolicies', fdWafPolicyName)
+
+// Reference the WAF policy as an existing resource to obtain the authoritative ARM id
+resource fdWafPolicyExisting 'Microsoft.Network/FrontDoorWebApplicationFirewallPolicies@2020-11-01' existing = if (enableWaf) {
+  name: fdWafPolicyName
+}
 module fdWafPolicy 'br/public:avm/res/network/front-door-web-application-firewall-policy:0.3.0' = if (enableWaf) {
   name: 'fdWafPolicy'
   params: {
@@ -794,3 +799,10 @@ module fdWafPolicy 'br/public:avm/res/network/front-door-web-application-firewal
 output afdProfileId string = afdProfile.outputs.resourceId
 output afdEndpointHost string = '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoorEndpoint}.azurefd.net'
 output afdProfileName string = afdProfile.outputs.name
+// Debug outputs to verify exact IDs used for WAF association
+output fdWafPolicyArmIdOut string = fdWafPolicyArmId
+output afdEndpointIdOut string = resourceId(
+  'Microsoft.Cdn/profiles/afdEndpoints',
+  '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}',
+  afdEndpointName
+)
