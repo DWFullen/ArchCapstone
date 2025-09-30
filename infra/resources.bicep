@@ -613,6 +613,9 @@ var afdEndpointName = '${zLocation}${azureSubscription}${applicationName}${devEn
 // Azure Front Door using AVM module
 module afdProfile 'br/public:avm/res/cdn/profile:0.8.0' = {
   name: 'afd-profile-deployment'
+  dependsOn: [
+    fdWafPolicy
+  ]
   params: {
     // Required parameters
     name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}'
@@ -704,7 +707,7 @@ module afdProfile 'br/public:avm/res/cdn/profile:0.8.0' = {
       ? [
           {
             name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontdoorWebApplicationFirewallPolicies}'
-            wafPolicyResourceId: fdWafPolicyExisting.id
+            wafPolicyResourceId: fdWafPolicyArmId
             associations: [
               {
                 domains: enableCustomDomain
@@ -743,6 +746,8 @@ module afdProfile 'br/public:avm/res/cdn/profile:0.8.0' = {
 
 // Front Door Standard/Premium WAF policy using AVM module
 var fdWafPolicyName = '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.networkFrontdoorWebApplicationFirewallPolicies}'
+// Explicitly construct the WAF policy ARM resource ID with the provider segment expected by AFD security policy validation
+var fdWafPolicyArmId = '/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name}/providers/Microsoft.Network/frontdoorwebapplicationfirewallpolicies/${fdWafPolicyName}'
 module fdWafPolicy 'br/public:avm/res/network/front-door-web-application-firewall-policy:0.3.0' = if (enableWaf) {
   name: 'fdWafPolicy'
   params: {
@@ -791,11 +796,6 @@ module fdWafPolicy 'br/public:avm/res/network/front-door-web-application-firewal
     }
     tags: tags
   }
-}
-
-// Bring the WAF policy into scope as an existing resource to safely reference its resourceId
-resource fdWafPolicyExisting 'Microsoft.Network/FrontDoorWebApplicationFirewallPolicies@2020-11-01' existing = if (enableWaf) {
-  name: fdWafPolicyName
 }
 
 // ---------------------------
