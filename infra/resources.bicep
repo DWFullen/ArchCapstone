@@ -542,7 +542,6 @@ resource azureCommunicationServices 'Microsoft.Communication/communicationServic
 }
 
 output AZURE_COMMUNICATION_SERVICES_NAME string = azureCommunicationServices.name
-output acsConnectionString string = listKeys(azureCommunicationServices.id, azureCommunicationServices.apiVersion).primaryConnectionString
 
 // Azure Key Vault #####################################################################################################################################################################################################
 
@@ -758,20 +757,25 @@ module fdWafPolicy 'br/public:avm/res/network/front-door-web-application-firewal
   }
 }
 
+// Bring the WAF policy into scope as an existing resource to safely reference its resourceId
+resource fdWafPolicyExisting 'Microsoft.Network/FrontDoorWebApplicationFirewallPolicies@2020-11-01' existing = if (enableWaf) {
+  name: fdWafPolicyName
+}
+
 // Bring the AFD profile into scope as an existing resource so we can create child resources under it
 resource afdProfileExisting 'Microsoft.Cdn/profiles@2021-06-01' existing = if (enableWaf) {
   name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}'
 }
 
 // Associate WAF policy with AFD (using security policy under the AFD profile)
-resource afdSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2021-06-01' = if (enableWaf && enableCustomDomain) {
+resource afdSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2021-06-01' = if (enableWaf) {
   parent: afdProfileExisting
   name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontdoorWebApplicationFirewallPolicies}'
   properties: {
     parameters: {
       type: 'WebApplicationFirewall'
       wafPolicy: {
-        id: resourceId('Microsoft.Network/FrontDoorWebApplicationFirewallPolicies', fdWafPolicyName)
+        id: fdWafPolicyExisting.id
       }
       associations: [
         {
