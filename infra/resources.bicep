@@ -710,25 +710,15 @@ module afdProfile 'br/public:avm/res/cdn/profile:0.8.0' = {
             wafPolicyResourceId: fdWafPolicyArmId
             associations: [
               {
-                domains: enableCustomDomain
-                  ? [
-                      {
-                        id: resourceId(
-                          'Microsoft.Cdn/profiles/customDomains',
-                          '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}',
-                          replace(customDomainName, '.', '-')
-                        )
-                      }
-                    ]
-                  : [
-                      {
-                        id: resourceId(
-                          'Microsoft.Cdn/profiles/afdEndpoints',
-                          '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}',
-                          afdEndpointName
-                        )
-                      }
-                    ]
+                domains: [
+                  {
+                    id: resourceId(
+                      'Microsoft.Cdn/profiles/afdEndpoints',
+                      '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}',
+                      afdEndpointName
+                    )
+                  }
+                ]
                 patternsToMatch: [
                   '/*'
                 ]
