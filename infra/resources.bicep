@@ -707,11 +707,12 @@ module afdProfile 'br/public:avm/res/cdn/profile:0.8.0' = {
 }
 
 // Front Door Standard/Premium WAF policy using AVM module
+var fdWafPolicyName = '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.networkFrontdoorWebApplicationFirewallPolicies}'
 module fdWafPolicy 'br/public:avm/res/network/front-door-web-application-firewall-policy:0.3.0' = if (enableWaf) {
   name: 'fdWafPolicy'
   params: {
     // Resource name
-    name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.networkFrontdoorWebApplicationFirewallPolicies}'
+    name: fdWafPolicyName
     // SKU must match AFD SKU
     sku: afdSkuName
     location: 'global'
@@ -770,7 +771,7 @@ resource afdSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2021-06-01' 
     parameters: {
       type: 'WebApplicationFirewall'
       wafPolicy: {
-        id: fdWafPolicy.outputs.resourceId
+        id: resourceId('Microsoft.Network/FrontDoorWebApplicationFirewallPolicies', fdWafPolicyName)
       }
       associations: [
         {
@@ -779,7 +780,9 @@ resource afdSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2021-06-01' 
               id: resourceId('Microsoft.Cdn/profiles/afdEndpoints', afdProfileExisting.name, afdEndpointName)
             }
           ]
-          // patternsToMatch defaults to all paths if omitted
+          patternsToMatch: [
+            '/*'
+          ]
         }
       ]
     }
