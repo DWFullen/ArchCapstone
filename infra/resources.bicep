@@ -707,7 +707,7 @@ module afdProfile 'br/public:avm/res/cdn/profile:0.8.0' = {
       ? [
           {
             name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontdoorWebApplicationFirewallPolicies}'
-            wafPolicyResourceId: fdWafPolicyExisting.id
+            wafPolicyResourceId: '/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name}/providers/Microsoft.Network/FrontDoorWebApplicationFirewallPolicies/${fdWafPolicyName}'
             associations: [
               {
                 domains: [
