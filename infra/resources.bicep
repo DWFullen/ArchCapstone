@@ -362,7 +362,6 @@ resource storageAccountBlobContainer 'Microsoft.Storage/storageAccounts/blobServ
 
 resource nistStoragePrivateEndpoint 'Microsoft.Network/privateEndpoints@2024-05-01' = {
   name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.privateEndpoint}'
-  dependsOn: [vnet]
   location: location
   tags: union(tags, {
     azdServiceName: 'nist-storage-private-endpoint'
@@ -476,7 +475,6 @@ var functionAppHostname = functionApp.outputs.defaultHostname
 
 resource functionAppPrivateEndpoint 'Microsoft.Network/privateEndpoints@2024-05-01' = {
   name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.privateEndpoint}-func'
-  dependsOn: [vnet]
   location: location
   tags: union(tags, {
     azdServiceName: 'functionapp-private-endpoint'
@@ -571,7 +569,6 @@ output keyVaultUri string = keyVault.properties.vaultUri
 
 resource acsConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2024-12-01-preview' = {
   parent: keyVault
-  dependsOn: [keyVault, azureCommunicationServices]
   name: 'ACS-ConnectionString'
   properties: {
     value: azureCommunicationServices.listKeys().primaryConnectionString
@@ -707,7 +704,7 @@ module afdProfile 'br/public:avm/res/cdn/profile:0.8.0' = {
       ? [
           {
             name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontdoorWebApplicationFirewallPolicies}'
-            wafPolicyResourceId: '/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name}/providers/Microsoft.Network/FrontDoorWebApplicationFirewallPolicies/${fdWafPolicyName}'
+            wafPolicyResourceId: fdWafPolicyExisting.id
             associations: [
               {
                 domains: [
