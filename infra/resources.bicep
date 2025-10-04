@@ -763,6 +763,7 @@ module fdWafPolicy 'br/public:avm/res/network/front-door-web-application-firewal
   }
 }
 
+// output fdWafPolicyResourceId string = fdWafPolicy.outputs.resourceId
 
 // Standalone Front Door Security Policy associating the WAF policy to the endpoint
 // Using explicit resource simplifies troubleshooting of ArmResourceId formatting
@@ -777,7 +778,8 @@ resource afdSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2024-02-01' 
       type: 'WebApplicationFirewall'
       wafPolicy: {
         // Use canonical lower-case resource type segment per documentation example
-        id: '/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name}/providers/Microsoft.Network/frontdoorwebapplicationfirewallpolicies/${fdWafPolicyName}'
+        id: fdWafPolicy.outputs.resourceId
+        // id: '/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name
       }
       associations: [
         {
