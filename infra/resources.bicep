@@ -48,6 +48,67 @@ param enableHttpsOnly bool = true
 param afdSkuName string = 'Standard_AzureFrontDoor'
 
 // (WAF removed) Previously had enableWaf & rateLimitThreshold parameters
+@description('Enable WAF integration (associates a Front Door WAF policy via security policy)')
+param enableWaf bool = true
+
+@description('Optional existing WAF policy ARM resource ID. If provided, creation is skipped and this ID is associated.')
+param existingWafPolicyId string = ''
+
+@description('Name to use when creating a new WAF policy (ignored if existingWafPolicyId supplied)')
+param wafPolicyName string = ''
+
+@description('Optional list of custom domains (hostnames) to attach to Front Door; if empty falls back to single customDomainName param')
+param domainNames array = []
+
+// Derived naming helpers
+var inferredWafPolicyName = empty(wafPolicyName)
+  ? toLower('${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}wafp')
+  : wafPolicyName
+// Determine if we must create a new WAF policy (no existing ID provided)
+var createWaf = enableWaf && empty(existingWafPolicyId)
+var allDomainNames = (enableCustomDomain && length(domainNames) > 0)
+  ? domainNames
+  : (enableCustomDomain ? [customDomainName] : [])
+var allDomainIds = [
+  for d in allDomainNames: resourceId(
+    'Microsoft.Cdn/profiles/customDomains',
+    '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}',
+    replace(d, '.', '-')
+  )
+]
+var allDomainObjects = [for dId in allDomainIds: { id: dId }]
+// canonical lower-case resource type segment per latest API
+var computedWafPolicyId = resourceId('Microsoft.Network/frontdoorwebapplicationfirewallpolicies', inferredWafPolicyName)
+var effectiveWafPolicyId = !enableWaf ? '' : (!empty(existingWafPolicyId) ? existingWafPolicyId : computedWafPolicyId)
+var associateToEndpoint = enableWaf && length(allDomainNames) == 0
+
+// Conditionally create a Front Door WAF policy when association is requested but no existing policy ID supplied
+module fdWafPolicy 'br/public:avm/res/network/front-door-web-application-firewall-policy:0.3.0' = if (createWaf) {
+  name: 'fd-waf-policy'
+  params: {
+    name: inferredWafPolicyName
+    location: 'global'
+    sku: afdSkuName
+    policySettings: {
+      enabledState: 'Enabled'
+      mode: 'Prevention'
+      redirectUrl: ''
+      requestBodyCheck: 'Enabled'
+    }
+    managedRules: {
+      managedRuleSets: [
+        {
+          ruleSetType: 'Microsoft_DefaultRuleSet'
+          ruleSetVersion: '2.1'
+        }
+      ]
+    }
+    customRules: {
+      rules: []
+    }
+    tags: tags
+  }
+}
 
 // Virtual  Network ##############################################################################################################################################################################################################################
 resource vnet 'Microsoft.Network/virtualNetworks@2021-05-01' = {
@@ -606,7 +667,8 @@ var afdEndpointName = '${zLocation}${azureSubscription}${applicationName}${devEn
 // Azure Front Door using AVM module
 module afdProfile 'br/public:avm/res/cdn/profile:0.8.0' = {
   name: 'afd-profile-deployment'
-  // WAF removed; no dependency on WAF policy
+  // Ensure WAF policy exists before associating security policy when we are creating it
+  dependsOn: createWaf ? [fdWafPolicy] : []
   params: {
     // Required parameters
     name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}'
@@ -693,7 +755,34 @@ module afdProfile 'br/public:avm/res/cdn/profile:0.8.0' = {
       }
     ]
 
-    // (Removed inline securityPolicies; now created as standalone resource for clarity and to avoid ArmResourceId formatting issues)
+    // Reinjected securityPolicies using effectiveWafPolicyId if WAF enabled
+    securityPolicies: enableWaf
+      ? [
+          {
+            name: '${inferredWafPolicyName}-sp'
+            wafPolicyResourceId: effectiveWafPolicyId
+            associations: [
+              associateToEndpoint
+                ? {
+                    domains: [
+                      {
+                        id: resourceId(
+                          'Microsoft.Cdn/profiles/afdEndpoints',
+                          '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}',
+                          afdEndpointName
+                        )
+                      }
+                    ]
+                    patternsToMatch: ['/*']
+                  }
+                : {
+                    domains: allDomainObjects
+                    patternsToMatch: ['/*']
+                  }
+            ]
+          }
+        ]
+      : []
 
     tags: {
       app: applicationName
@@ -716,3 +805,4 @@ output afdEndpointIdOut string = resourceId(
   '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}',
   afdEndpointName
 )
+output wafPolicyEffectiveId string = enableWaf ? effectiveWafPolicyId : ''
