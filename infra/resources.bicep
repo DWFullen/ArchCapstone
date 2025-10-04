@@ -47,11 +47,7 @@ param enableHttpsOnly bool = true
 @description('AFD SKU: Standard_AzureFrontDoor or Premium_AzureFrontDoor')
 param afdSkuName string = 'Standard_AzureFrontDoor'
 
-@description('Enable Azure WAF on Front Door (creates policy and associates to custom domain)')
-param enableWaf bool = true
-
-@description('Rate limit threshold per client IP per minute (set 0 to disable the custom rule)')
-param rateLimitThreshold int = 300
+// (WAF removed) Previously had enableWaf & rateLimitThreshold parameters
 
 // Virtual  Network ##############################################################################################################################################################################################################################
 resource vnet 'Microsoft.Network/virtualNetworks@2021-05-01' = {
@@ -610,9 +606,7 @@ var afdEndpointName = '${zLocation}${azureSubscription}${applicationName}${devEn
 // Azure Front Door using AVM module
 module afdProfile 'br/public:avm/res/cdn/profile:0.8.0' = {
   name: 'afd-profile-deployment'
-  dependsOn: [
-    fdWafPolicy
-  ]
+  // WAF removed; no dependency on WAF policy
   params: {
     // Required parameters
     name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}'
@@ -707,100 +701,7 @@ module afdProfile 'br/public:avm/res/cdn/profile:0.8.0' = {
   }
 }
 
-// Front Door Standard/Premium WAF policy using AVM module
-var fdWafPolicyName = '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.networkFrontdoorWebApplicationFirewallPolicies}'
-// Explicitly construct the WAF policy ARM resource ID with the provider segment expected by AFD security policy validation
-var fdWafPolicyArmId = resourceId('Microsoft.Network/frontdoorWebApplicationFirewallPolicies', fdWafPolicyName)
-
-// Reference the WAF policy as an existing resource to obtain the authoritative ARM id
-module fdWafPolicy 'br/public:avm/res/network/front-door-web-application-firewall-policy:0.3.0' = if (enableWaf) {
-  name: 'fdWafPolicy'
-  params: {
-    // Resource name
-    name: fdWafPolicyName
-    // SKU must match AFD SKU
-    sku: afdSkuName
-    location: 'global'
-    policySettings: {
-      enabledState: 'Enabled'
-      mode: 'Prevention'
-    }
-    // Provide managed rules explicitly to avoid BotManager on Standard
-    managedRules: {
-      managedRuleSets: [
-        {
-          ruleSetType: 'Microsoft_DefaultRuleSet'
-          ruleSetVersion: '2.1'
-        }
-      ]
-    }
-    customRules: {
-      rules: (rateLimitThreshold > 0)
-        ? [
-            {
-              name: 'ApplyRateLimit'
-              priority: 100
-              enabledState: 'Enabled'
-              ruleType: 'RateLimitRule'
-              rateLimitThreshold: rateLimitThreshold
-              rateLimitDurationInMinutes: 1
-              action: 'Block'
-              matchConditions: [
-                {
-                  matchVariable: 'RemoteAddr'
-                  operator: 'IPMatch'
-                  negateCondition: true
-                  matchValue: [
-                    '192.0.2.0/24'
-                  ]
-                }
-              ]
-            }
-          ]
-        : []
-    }
-    tags: tags
-  }
-}
-
 // output fdWafPolicyResourceId string = fdWafPolicy.outputs.resourceId
-
-// Standalone Front Door Security Policy associating the WAF policy to the endpoint
-// Using explicit resource simplifies troubleshooting of ArmResourceId formatting
-resource afdSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2024-02-01' = if (enableWaf) {
-  // Name must be: <profileName>/<securityPolicyName>
-  name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}/${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}wafsp'
-  dependsOn: [
-    fdWafPolicy
-  ]
-  properties: {
-    parameters: {
-      type: 'WebApplicationFirewall'
-      wafPolicy: {
-        // Use canonical lower-case resource type segment per documentation example
-        id: fdWafPolicy.outputs.resourceId
-        // id: '/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name
-      }
-      associations: [
-        {
-          domains: [
-            {
-              id: resourceId(
-                'Microsoft.Cdn/profiles/afdEndpoints',
-                '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}',
-                afdEndpointName
-              )
-            }
-          ]
-          patternsToMatch: [
-            '/*'
-          ]
-        }
-      ]
-    }
-  }
-}
-
 
 // ---------------------------
 // Outputs
@@ -809,7 +710,7 @@ output afdProfileId string = afdProfile.outputs.resourceId
 output afdEndpointHost string = '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoorEndpoint}.azurefd.net'
 output afdProfileName string = afdProfile.outputs.name
 // Debug outputs to verify exact IDs used for WAF association
-output fdWafPolicyArmIdOut string = fdWafPolicyArmId
+// WAF removed: no WAF debug output
 output afdEndpointIdOut string = resourceId(
   'Microsoft.Cdn/profiles/afdEndpoints',
   '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}',
