@@ -699,31 +699,7 @@ module afdProfile 'br/public:avm/res/cdn/profile:0.8.0' = {
       }
     ]
 
-    // Security policy (WAF association) embedded in AVM module to ensure correct schema
-    securityPolicies: enableWaf
-      ? [
-          {
-            name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontdoorWebApplicationFirewallPolicies}'
-            wafPolicyResourceId: fdWafPolicyExisting.id
-            associations: [
-              {
-                domains: [
-                  {
-                    id: resourceId(
-                      'Microsoft.Cdn/profiles/afdEndpoints',
-                      '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}',
-                      afdEndpointName
-                    )
-                  }
-                ]
-                patternsToMatch: [
-                  '/*'
-                ]
-              }
-            ]
-          }
-        ]
-      : []
+    // (Removed inline securityPolicies; now created as standalone resource for clarity and to avoid ArmResourceId formatting issues)
 
     tags: {
       app: applicationName
@@ -737,9 +713,6 @@ var fdWafPolicyName = '${zLocation}-${azureSubscription}-${applicationName}-${de
 var fdWafPolicyArmId = resourceId('Microsoft.Network/frontdoorWebApplicationFirewallPolicies', fdWafPolicyName)
 
 // Reference the WAF policy as an existing resource to obtain the authoritative ARM id
-resource fdWafPolicyExisting 'Microsoft.Network/FrontDoorWebApplicationFirewallPolicies@2020-11-01' existing = if (enableWaf) {
-  name: fdWafPolicyName
-}
 module fdWafPolicy 'br/public:avm/res/network/front-door-web-application-firewall-policy:0.3.0' = if (enableWaf) {
   name: 'fdWafPolicy'
   params: {
@@ -789,6 +762,43 @@ module fdWafPolicy 'br/public:avm/res/network/front-door-web-application-firewal
     tags: tags
   }
 }
+
+
+// Standalone Front Door Security Policy associating the WAF policy to the endpoint
+// Using explicit resource simplifies troubleshooting of ArmResourceId formatting
+resource afdSecurityPolicy 'Microsoft.Cdn/profiles/securityPolicies@2024-02-01' = if (enableWaf) {
+  // Name must be: <profileName>/<securityPolicyName>
+  name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}/${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}wafsp'
+  dependsOn: [
+    fdWafPolicy
+  ]
+  properties: {
+    parameters: {
+      type: 'WebApplicationFirewall'
+      wafPolicy: {
+        // Use canonical lower-case resource type segment per documentation example
+        id: '/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name}/providers/Microsoft.Network/frontdoorwebapplicationfirewallpolicies/${fdWafPolicyName}'
+      }
+      associations: [
+        {
+          domains: [
+            {
+              id: resourceId(
+                'Microsoft.Cdn/profiles/afdEndpoints',
+                '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}',
+                afdEndpointName
+              )
+            }
+          ]
+          patternsToMatch: [
+            '/*'
+          ]
+        }
+      ]
+    }
+  }
+}
+
 
 // ---------------------------
 // Outputs
