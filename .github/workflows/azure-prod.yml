@@ -45,6 +45,7 @@ jobs:
             --client-id "$Env:AZURE_CLIENT_ID" `
             --federated-credential-provider "github" `
             --tenant-id "$Env:AZURE_TENANT_ID"
+          az account set --subscription "$Env:AZURE_SUBSCRIPTION_ID"
         shell: pwsh
       - name: Resolve Front Door deploy flag
         run: |
@@ -57,12 +58,23 @@ jobs:
             -DevEnvironmentName $Env:ENVIRONMENT_NAME `
             -ApplicationVersion $Env:APPLICATION_VERSION
           $fdParams = Get-Content ./infra/scripts/frontdoor.auto.parameters.json | ConvertFrom-Json
-            $deploy = $fdParams.parameters.deployFrontDoor.value
-            echo "Resolved deployFrontDoor=$deploy" | Out-Host
-            azd env set deployFrontDoor $deploy
+          $deploy = $fdParams.parameters.deployFrontDoor.value
+          echo "Resolved deployFrontDoor=$deploy" | Out-Host
         shell: pwsh
       - name: Provision Infrastructure
-        run: azd provision --no-prompt
+        run: |
+          $autoParams = "infra/scripts/frontdoor.auto.parameters.json"
+          if (Test-Path $autoParams) {
+            Write-Host "Including auto Front Door parameter file: $autoParams"
+            azd provision --no-prompt `
+              --template-parameter-file infra/main.parameters.json `
+              --template-parameter-file $autoParams
+          } else {
+            Write-Host "Auto Front Door parameter file not found; proceeding with static parameters only."
+            azd provision --no-prompt `
+              --template-parameter-file infra/main.parameters.json
+          }
+        shell: pwsh
         env:
           AZD_INITIAL_ENVIRONMENT_CONFIG: ${{ secrets.AZD_INITIAL_ENVIRONMENT_CONFIG }}
           ENVIRONMENT_NAME: ${{ vars.AZURE_PROD_ENVIRONMENT_NAME }}
