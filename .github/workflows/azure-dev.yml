@@ -69,7 +69,26 @@ jobs:
             --client-id "$Env:AZURE_CLIENT_ID" `
             --federated-credential-provider "github" `
             --tenant-id "$Env:AZURE_TENANT_ID"
-          az account set --subscription "$Env:AZURE_SUBSCRIPTION_ID"
+          Write-Host "Requested subscription (env AZURE_SUBSCRIPTION_ID): $Env:AZURE_SUBSCRIPTION_ID"
+          Write-Host "Listing subscriptions visible to this principal:"
+          az account list --output table
+          $sub = $Env:AZURE_SUBSCRIPTION_ID
+          if (-not $sub -or $sub.Trim() -eq "") { throw "AZURE_SUBSCRIPTION_ID env var is empty" }
+          try {
+            az account set --subscription $sub
+            Write-Host "Successfully set subscription context to $sub"
+            az account show --output table
+          } catch {
+            Write-Host "Failed to set subscription $sub. Attempting explicit refresh..." -ForegroundColor Yellow
+            az account clear
+            azd auth login `
+              --client-id "$Env:AZURE_CLIENT_ID" `
+              --federated-credential-provider "github" `
+              --tenant-id "$Env:AZURE_TENANT_ID"
+            az account set --subscription $sub
+            Write-Host "Subscription context set after retry." 
+            az account show --output table
+          }
         shell: pwsh
       - name: Resolve Front Door deploy flag
         run: |
