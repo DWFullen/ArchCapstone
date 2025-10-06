@@ -28,88 +28,6 @@ param myBlazorAppDefinition object
 var abbrs = loadJsonContent('./abbreviations.json')
 var resourceToken = uniqueString(subscription().id, resourceGroup().id, location)
 
-// ---------------------------
-// Parameters -AFD
-// ---------------------------
-@description('Custom domain to serve (must be a root or subdomain you control)')
-param customDomainName string = 'www.rebelcorpo.com'
-
-@description('Enable custom domain creation (set false to skip if domain already exists)')
-param enableCustomDomain bool = true
-
-// Removed unused parameter 'storageStaticWebsiteHostname' (and avoided hardcoded public cloud suffix in description)
-
-// Removed unused parameter 'healthProbePath'
-
-@description('Optional: Enable HTTP to HTTPS redirect at route level')
-param enableHttpsOnly bool = true
-
-@description('AFD SKU: Standard_AzureFrontDoor or Premium_AzureFrontDoor')
-param afdSkuName string = 'Standard_AzureFrontDoor'
-
-// (WAF removed) Previously had enableWaf & rateLimitThreshold parameters
-@description('Enable WAF integration (associates a Front Door WAF policy via security policy)')
-param enableWaf bool = true
-
-@description('Optional existing WAF policy ARM resource ID. If provided, creation is skipped and this ID is associated.')
-param existingWafPolicyId string = ''
-
-@description('Name to use when creating a new WAF policy (ignored if existingWafPolicyId supplied)')
-param wafPolicyName string = ''
-
-@description('Optional list of custom domains (hostnames) to attach to Front Door; if empty falls back to single customDomainName param')
-param domainNames array = []
-
-// Derived naming helpers
-var inferredWafPolicyName = empty(wafPolicyName)
-  ? toLower('${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}wafp')
-  : wafPolicyName
-// Determine if we must create a new WAF policy (no existing ID provided)
-var createWaf = enableWaf && empty(existingWafPolicyId)
-var allDomainNames = (enableCustomDomain && length(domainNames) > 0)
-  ? domainNames
-  : (enableCustomDomain ? [customDomainName] : [])
-var allDomainIds = [
-  for d in allDomainNames: resourceId(
-    'Microsoft.Cdn/profiles/customDomains',
-    '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}',
-    replace(d, '.', '-')
-  )
-]
-var allDomainObjects = [for dId in allDomainIds: { id: dId }]
-// canonical lower-case resource type segment per latest API
-var computedWafPolicyId = resourceId('Microsoft.Network/frontdoorwebapplicationfirewallpolicies', inferredWafPolicyName)
-var effectiveWafPolicyId = !enableWaf ? '' : (!empty(existingWafPolicyId) ? existingWafPolicyId : computedWafPolicyId)
-var associateToEndpoint = enableWaf && length(allDomainNames) == 0
-
-// Conditionally create a Front Door WAF policy when association is requested but no existing policy ID supplied
-module fdWafPolicy 'br/public:avm/res/network/front-door-web-application-firewall-policy:0.3.0' = if (createWaf) {
-  name: 'fd-waf-policy'
-  params: {
-    name: inferredWafPolicyName
-    location: 'global'
-    sku: afdSkuName
-    policySettings: {
-      enabledState: 'Enabled'
-      mode: 'Prevention'
-      redirectUrl: ''
-      requestBodyCheck: 'Enabled'
-    }
-    managedRules: {
-      managedRuleSets: [
-        {
-          ruleSetType: 'Microsoft_DefaultRuleSet'
-          ruleSetVersion: '2.1'
-        }
-      ]
-    }
-    customRules: {
-      rules: []
-    }
-    tags: tags
-  }
-}
-
 // Virtual  Network ##############################################################################################################################################################################################################################
 resource vnet 'Microsoft.Network/virtualNetworks@2021-05-01' = {
   name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.networkVirtualNetworks}'
@@ -270,6 +188,7 @@ output AZURE_CONTAINER_REGISTRY_ENDPOINT string = containerRegistry.outputs.logi
 output AZURE_RESOURCE_MY_BLAZOR_APP_ID string = myBlazorApp.outputs.resourceId
 output MANAGED_IDENTITY_PRINCIPAL_ID string = myBlazorAppIdentity.outputs.principalId
 output MY_BLAZOR_APP_FQDN string = myBlazorApp.outputs.fqdn
+output FUNCTION_APP_HOSTNAME string = functionApp.outputs.defaultHostname
 
 //Nist 800-53 rev 5 compliant storage account #####################################################################################################################################################################################################
 
@@ -528,7 +447,6 @@ module functionApp 'br/public:avm/res/web/site:0.16.0' = {
 }
 
 output functionAppPrincipalId string = functionApp.outputs.?systemAssignedMIPrincipalId ?? ''
-var functionAppHostname = functionApp.outputs.defaultHostname
 
 resource functionAppPrivateEndpoint 'Microsoft.Network/privateEndpoints@2024-05-01' = {
   name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.privateEndpoint}-func'
@@ -654,155 +572,4 @@ resource btcpayApiIdSecret 'Microsoft.KeyVault/vaults/secrets@2024-12-01-preview
   }
 }
 
-//Azure Front Door #####################################################################################################################################################################################################
-
-// Azure Front Door using AVM module - single endpoint for rebelcorpo.com
-// Routes traffic to Container App (default), Function App (/api/*), Storage Static Website (/static/*)
-
-// Variables for dynamic hostnames
-var containerAppHostname = myBlazorApp.outputs.fqdn
-// AFD endpoint name used in AVM module
-var afdEndpointName = '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoorEndpoint}'
-
-// Azure Front Door using AVM module
-module afdProfile 'br/public:avm/res/cdn/profile:0.8.0' = {
-  name: 'afd-profile-deployment'
-  // Ensure WAF policy exists before associating security policy when we are creating it
-  dependsOn: createWaf ? [fdWafPolicy] : []
-  params: {
-    // Required parameters
-    name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}'
-    sku: afdSkuName
-    location: 'global'
-
-    // Custom domain configuration (conditional)
-    customDomains: enableCustomDomain
-      ? [
-          {
-            certificateType: 'ManagedCertificate'
-            hostName: customDomainName
-            name: replace(customDomainName, '.', '-')
-          }
-        ]
-      : []
-
-    // Origin groups configuration
-    originGroups: [
-      {
-        name: 'og-container'
-        loadBalancingSettings: {
-          sampleSize: 4
-          successfulSamplesRequired: 3
-          additionalLatencyInMilliseconds: 0
-        }
-        origins: [
-          {
-            hostName: containerAppHostname
-            name: 'origin-container'
-            originHostHeader: containerAppHostname
-            priority: 1
-            weight: 1000
-            enabledState: 'Enabled'
-          }
-        ]
-      }
-      {
-        name: 'og-function'
-        loadBalancingSettings: {
-          sampleSize: 4
-          successfulSamplesRequired: 3
-          additionalLatencyInMilliseconds: 0
-        }
-        origins: [
-          {
-            hostName: functionAppHostname
-            name: 'origin-function'
-            originHostHeader: functionAppHostname
-            priority: 1
-            weight: 1000
-            enabledState: 'Enabled'
-          }
-        ]
-      }
-    ]
-
-    // AFD endpoints with routes
-    afdEndpoints: [
-      {
-        name: '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoorEndpoint}'
-        routes: [
-          {
-            name: 'route-default'
-            customDomainNames: enableCustomDomain ? [replace(customDomainName, '.', '-')] : []
-            originGroupName: 'og-container'
-            supportedProtocols: ['Https']
-            httpsRedirect: enableHttpsOnly ? 'Enabled' : 'Disabled'
-            linkToDefaultDomain: enableCustomDomain ? 'Disabled' : 'Enabled'
-            patternsToMatch: ['/*']
-            forwardingProtocol: 'MatchRequest'
-          }
-          {
-            name: 'route-api'
-            customDomainNames: enableCustomDomain ? [replace(customDomainName, '.', '-')] : []
-            originGroupName: 'og-function'
-            supportedProtocols: ['Https']
-            httpsRedirect: enableHttpsOnly ? 'Enabled' : 'Disabled'
-            linkToDefaultDomain: enableCustomDomain ? 'Disabled' : 'Enabled'
-            patternsToMatch: ['/api/*']
-            forwardingProtocol: 'MatchRequest'
-          }
-        ]
-      }
-    ]
-
-    // Reinjected securityPolicies using effectiveWafPolicyId if WAF enabled
-    securityPolicies: enableWaf
-      ? [
-          {
-            name: '${inferredWafPolicyName}-sp'
-            wafPolicyResourceId: effectiveWafPolicyId
-            associations: [
-              associateToEndpoint
-                ? {
-                    domains: [
-                      {
-                        id: resourceId(
-                          'Microsoft.Cdn/profiles/afdEndpoints',
-                          '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}',
-                          afdEndpointName
-                        )
-                      }
-                    ]
-                    patternsToMatch: ['/*']
-                  }
-                : {
-                    domains: allDomainObjects
-                    patternsToMatch: ['/*']
-                  }
-            ]
-          }
-        ]
-      : []
-
-    tags: {
-      app: applicationName
-    }
-  }
-}
-
-// output fdWafPolicyResourceId string = fdWafPolicy.outputs.resourceId
-
-// ---------------------------
-// Outputs
-// ---------------------------
-output afdProfileId string = afdProfile.outputs.resourceId
-output afdEndpointHost string = '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoorEndpoint}.azurefd.net'
-output afdProfileName string = afdProfile.outputs.name
-// Debug outputs to verify exact IDs used for WAF association
-// WAF removed: no WAF debug output
-output afdEndpointIdOut string = resourceId(
-  'Microsoft.Cdn/profiles/afdEndpoints',
-  '${zLocation}${azureSubscription}${applicationName}${devEnvironmentName}${applicationVersion}${abbrs.networkFrontDoors}',
-  afdEndpointName
-)
-output wafPolicyEffectiveId string = enableWaf ? effectiveWafPolicyId : ''
+// Front Door removed; now deployed via separate module.

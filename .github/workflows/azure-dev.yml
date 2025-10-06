@@ -70,6 +70,21 @@ jobs:
             --federated-credential-provider "github" `
             --tenant-id "$Env:AZURE_TENANT_ID"
         shell: pwsh
+      - name: Resolve Front Door deploy flag
+        run: |
+          $rgName = "${Env:AZURE_Z_LOCATION}-${Env:AZURE_SUBSCRIPTION}-${Env:APPLICATION_NAME}-${Env:ENVIRONMENT_NAME}-${Env:APPLICATION_VERSION}-rg"
+          pwsh ./infra/scripts/resolve-frontdoor-param.ps1 `
+            -ResourceGroupName $rgName `
+            -ZLocation $Env:AZURE_Z_LOCATION `
+            -AzureSubscriptionCode $Env:AZURE_SUBSCRIPTION `
+            -ApplicationName $Env:APPLICATION_NAME `
+            -DevEnvironmentName $Env:ENVIRONMENT_NAME `
+            -ApplicationVersion $Env:APPLICATION_VERSION
+          $fdParams = Get-Content ./infra/scripts/frontdoor.auto.parameters.json | ConvertFrom-Json
+          $deploy = $fdParams.parameters.deployFrontDoor.value
+          echo "Resolved deployFrontDoor=$deploy" | Out-Host
+          azd env set deployFrontDoor $deploy
+        shell: pwsh
       - name: Provision Infrastructure
         run: |
           echo "ENVIRONMENT_NAME=$ENVIRONMENT_NAME" >> $GITHUB_ENV

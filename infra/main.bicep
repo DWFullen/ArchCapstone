@@ -36,6 +36,13 @@ param BTCPAY_API_ID string
 @secure()
 param BTCPAY_API_KEY string
 
+@description('Deploy Front Door + WAF module (runs only when true).')
+param deployFrontDoor bool = false
+@description('Primary custom domain for Front Door (used when deployFrontDoor = true).')
+param frontDoorPrimaryDomain string = 'www.rebelcorpo.com'
+@description('Additional custom domains for Front Door.')
+param frontDoorAdditionalDomains array = []
+
 // Tags that should be applied to all resources.
 // 
 // Note that 'azd-service-name' tags should be applied separately to service host resources.
@@ -89,6 +96,28 @@ module rbacMain 'rbacMain.bicep' = {
   }
 }
 
+// Front Door + WAF (deployed only once; gating logic should be handled externally or via this toggle)
+module frontdoor 'frontdoor.bicep' = if (deployFrontDoor) {
+  scope: rg
+  name: 'frontdoor'
+  params: {
+    zLocation: zLocation
+    azureSubscription: azureSubscription
+    applicationName: applicationName
+    devEnvironmentName: devEnvironmentName
+    applicationVersion: applicationVersion
+    tags: tags
+    containerAppFqdn: resources.outputs.MY_BLAZOR_APP_FQDN
+    functionAppHostname: resources.outputs.FUNCTION_APP_HOSTNAME
+    primaryCustomDomain: frontDoorPrimaryDomain
+    additionalCustomDomains: frontDoorAdditionalDomains
+    enableWaf: true
+    wafMode: 'Prevention'
+  }
+}
+
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = resources.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT
 output AZURE_RESOURCE_MY_BLAZOR_APP_ID string = resources.outputs.AZURE_RESOURCE_MY_BLAZOR_APP_ID
 output resourceGroupName string = rg.name
+// Conditional: only output when module deployed
+// FRONT_DOOR_ENDPOINT intentionally omitted due to conditional module output limitations; retrieve directly if deployed.

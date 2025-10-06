@@ -219,3 +219,50 @@ Plan to add Front Door for global routing, security, and CDN.
 
 ---
 
+# ArchCapstone
+
+...existing content...
+
+## Front Door Auto-Deployment Logic
+
+The infrastructure includes an optional Azure Front Door + WAF module controlled by the `deployFrontDoor` parameter in `infra/main.bicep`.
+
+### How Deployment Is Decided
+A pre-provision GitHub Actions step runs `infra/scripts/resolve-frontdoor-param.ps1` which:
+1. Computes the expected Front Door profile name: `<zLocation><azureSubscription><applicationName><devEnvironmentName><applicationVersion>fd` (lowercase)
+2. Checks if the profile already exists in the target resource group.
+3. Writes `infra/scripts/frontdoor.auto.parameters.json` with `{ deployFrontDoor: true|false }`.
+4. Sets `azd` environment variable `deployFrontDoor` accordingly (`azd env set deployFrontDoor <value>`).
+
+Result:
+- First run (profile absent) -> `deployFrontDoor=true` and module is deployed.
+- Subsequent runs -> `deployFrontDoor=false` so module is skipped (idempotent core provisioning).
+
+### Local Manual Use
+If running locally outside CI:
+```
+pwsh ./infra/scripts/resolve-frontdoor-param.ps1 \ 
+  -ResourceGroupName zus1-rc-rcwebsite-dev-v1-rg \ 
+  -ZLocation zus1 -AzureSubscriptionCode rc -ApplicationName rcwebsite \ 
+  -DevEnvironmentName dev -ApplicationVersion v1
+
+az deployment sub create \
+  --location eastus \
+  --template-file infra/main.bicep \
+  --parameters @infra/scripts/frontdoor.auto.parameters.json \
+  --parameters environmentName=dev zLocation=zus1 azureSubscription=rc applicationName=rcwebsite devEnvironmentName=dev applicationVersion=v1
+```
+
+### Adjusting WAF Mode or Domains Later
+Currently the module is skipped after first deploy. To modify domains or WAF mode:
+1. Temporarily set `deployFrontDoor=true` manually OR remove the profile so detection triggers redeploy.
+2. Adjust parameters (e.g., `frontDoorPrimaryDomain`, `frontDoorAdditionalDomains`, or WAF settings inside `frontdoor.bicep`).
+3. Re-run provisioning.
+
+### Future Enhancements (Optional)
+- Add `forceFrontDoorRedeploy` param to allow reconfiguration without deletion.
+- Export endpoint hostname via always-on output once stable.
+- Domain differential association logic.
+
+---
+
