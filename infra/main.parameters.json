@@ -62,6 +62,9 @@
       },
       "BTCPAY_API_KEY": {
         "value": "${BTCPAY_API_KEY}"
+      },
+      "deployFrontDoor": {
+        "value": "${DEPLOY_FRONT_DOOR=false}"
       }
     }
 }

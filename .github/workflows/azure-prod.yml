@@ -66,20 +66,11 @@ jobs:
           $fdParams = Get-Content ./infra/scripts/frontdoor.auto.parameters.json | ConvertFrom-Json
           $deploy = $fdParams.parameters.deployFrontDoor.value
           echo "Resolved deployFrontDoor=$deploy" | Out-Host
+          echo "DEPLOY_FRONT_DOOR=$deploy" >> $GITHUB_ENV
         shell: pwsh
       - name: Provision Infrastructure
         run: |
-          $autoParams = "infra/scripts/frontdoor.auto.parameters.json"
-          if (Test-Path $autoParams) {
-            Write-Host "Including auto Front Door parameter file: $autoParams"
-            azd provision --no-prompt `
-              --template-parameter-file infra/main.parameters.json `
-              --template-parameter-file $autoParams
-          } else {
-            Write-Host "Auto Front Door parameter file not found; proceeding with static parameters only."
-            azd provision --no-prompt `
-              --template-parameter-file infra/main.parameters.json
-          }
+          azd provision --no-prompt
         shell: pwsh
         env:
           AZD_INITIAL_ENVIRONMENT_CONFIG: ${{ secrets.AZD_INITIAL_ENVIRONMENT_CONFIG }}
