@@ -216,7 +216,7 @@ Plan to add Front Door for global routing, security, and CDN.
 5. Test RBAC deployment independently from main infrastructure deployment.
 6. Document RBAC deployment process and usage in the main `readme.md`.
 7. (Optional) Add error handling and validation for resource existence before assigning roles.
-
+V
 ---
 
 # ArchCapstone
