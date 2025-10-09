@@ -85,7 +85,65 @@ az ad group list --query "[?starts_with(displayName, 'Agency')].{DisplayName:dis
 # Add CORS origin to web app
 az webapp cors add --resource-group DWDAPI --name dwdapi --allowed-origins https://examplewebsite.com
 
-#----------------------------------------------------------TICKET--------------------------------------------------------------------------------
-#---------------------------------------------------------0000000--------------------------------------------------------------------------------
 
-# Space used for temporary code for ticket work
+#----------------------------------------------------------AZURE DNS--------------------------------------------------------------------------------
+
+# List DNS zones
+az network dns zone list --output table
+# Show DNS zone details
+az network dns zone show --name "example.com" --output table
+# Create DNS zone
+az network dns zone create --name "example.com" --resource-group "MyResourceGroup" --output table
+# Delete DNS zone
+az network dns zone delete --name "example.com" --resource-group "MyResourceGroup" --yes --output table
+# List DNS records
+az network dns record-set list --zone-name "example.com" --output table
+# Show DNS record details
+az network dns record-set show --name "www" --type "A" --zone-name "example.com" --output table
+# Create DNS record
+az network dns record-set a add-record --zone-name "example.com" --record-set-name "www" --ipv4-address "1.2.3.4" --output table
+# Delete DNS record
+az network dns record-set a remove-record --zone-name "example.com" --record-set-name "www" --ipv4-address "1.2.3.4" --output table
+# AFD Custom Domain Validation Token
+az afd custom-domain show -g <resourceGroup> --profile-name '<profileName>' -n <customDomainResourceName> --query validationProperties.validationToken -o tsv
+#----------------------------------------------------------AZURE FRONT DOOR (AFD) CUSTOM DOMAIN COMMANDS----------------------------------------------------------
+
+# Variables (override as needed)
+$rg="zus1-rc-rcwebsite-dev-v1-rg"
+$profile="zus1rcrcwebsitedevv1fd"
+$apexDomainResource="rebelcorpo-com"          # Resource name in AFD (dots replaced with dashes)
+$wwwDomainResource="www-rebelcorpo-com"       # Resource name for www host
+
+# Show full custom domain object (apex)
+az afd custom-domain show -g $rg --profile-name $profile -n $apexDomainResource
+
+# Show full custom domain object (www)
+az afd custom-domain show -g $rg --profile-name $profile -n $wwwDomainResource
+
+# Show current validation tokens (apex & www)
+az afd custom-domain show -g $rg --profile-name $profile -n $apexDomainResource --query validationProperties.validationToken -o tsv
+az afd custom-domain show -g $rg --profile-name $profile -n $wwwDomainResource  --query validationProperties.validationToken -o tsv
+
+# Show validation & certificate status (key fields)
+az afd custom-domain show -g $rg --profile-name $profile -n $apexDomainResource --query "{name:name,validationState:validationProperties.validationState,provisioningState:provisioningState,certType:tlsSettings.certificateType,certStatus:tlsSettings.certificateStatus,hostName:hostName}" -o json
+az afd custom-domain show -g $rg --profile-name $profile -n $wwwDomainResource  --query "{name:name,validationState:validationProperties.validationState,provisioningState:provisioningState,certType:tlsSettings.certificateType,certStatus:tlsSettings.certificateStatus,hostName:hostName}" -o json
+
+# Regenerate validation token (ONLY if you need to rotate token and update TXT record)
+az afd custom-domain regenerate-validation-token -g $rg --profile-name $profile --custom-domain-name $apexDomainResource --query validationProperties.validationToken -o tsv
+az afd custom-domain regenerate-validation-token -g $rg --profile-name $profile --custom-domain-name $wwwDomainResource  --query validationProperties.validationToken -o tsv
+
+# After regeneration remember to update corresponding _dnsauth TXT records, then wait (5-15m typical) and re-check validationState.
+
+# (Optional) Compact table view for quick status scan
+az afd custom-domain list -g $rg --profile-name $profile --query "[].{name:name,host:hostName,validation:validationProperties.validationState,prov:provisioningState,certType:tlsSettings.certificateType,certStatus:tlsSettings.certificateStatus}" -o table
+
+# (Optional) PowerShell polling loop (stop with Ctrl+C)
+<#
+while ($true) {
+	az afd custom-domain list -g $rg --profile-name $profile --query "[].{name:name,validation:validationProperties.validationState,certStatus:tlsSettings.certificateStatus}" -o table
+	Start-Sleep -Seconds 30
+}
+#>
+
+az afd custom-domain show -g zus1-rc-rcwebsite-dev-v1-rg --profile-name zus1rcrcwebsitedevv1fd -n rebelcorpo-com --query "{validation:validationProperties.validationState,prov:provisioningState,certType:tlsSettings.certificateType,certStatus:tlsSettings.certificateStatus}" -o json
+az afd custom-domain show -g zus1-rc-rcwebsite-dev-v1-rg --profile-name zus1rcrcwebsitedevv1fd -n www-rebelcorpo-com --query "{validation:validationProperties.validationState,prov:provisioningState,certType:tlsSettings.certificateType,certStatus:tlsSettings.certificateStatus}" -o json

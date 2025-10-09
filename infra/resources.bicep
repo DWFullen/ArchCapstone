@@ -122,11 +122,13 @@ var myBlazorAppEnv = map(filter(myBlazorAppAppSettingsArray, i => i.?secret == n
   value: i.value
 })
 
+param containerAppTargetport int = 8080
+
 module myBlazorApp 'br/public:avm/res/app/container-app:0.8.0' = {
   name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.appContainerApps}'
   params: {
     name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.appContainerApps}'
-    ingressTargetPort: 8080
+    ingressTargetPort: containerAppTargetport
     scaleMinReplicas: 0
     scaleMaxReplicas: 1
     secrets: {
@@ -158,7 +160,12 @@ module myBlazorApp 'br/public:avm/res/app/container-app:0.8.0' = {
             }
             {
               name: 'PORT'
-              value: '8080'
+              value: '${containerAppTargetport}'
+            }
+            // Ensure ASP.NET Core binds to the same port (safe for other stacks too)
+            {
+              name: 'ASPNETCORE_URLS'
+              value: 'http://0.0.0.0:${containerAppTargetport}'
             }
           ],
           myBlazorAppEnv,
