@@ -122,7 +122,7 @@ var myBlazorAppEnv = map(filter(myBlazorAppAppSettingsArray, i => i.?secret == n
   value: i.value
 })
 
-param containerAppTargetport int = 8080
+param containerAppTargetport int = 80
 
 module myBlazorApp 'br/public:avm/res/app/container-app:0.8.0' = {
   name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.appContainerApps}'
