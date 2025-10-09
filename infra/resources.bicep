@@ -580,3 +580,4 @@ resource btcpayApiIdSecret 'Microsoft.KeyVault/vaults/secrets@2024-12-01-preview
 }
 
 // Front Door removed; now deployed via separate module.
+//redeploying infrastructure

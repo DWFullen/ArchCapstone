@@ -8,7 +8,7 @@ docker build -t myblazorapp:latest .
 
 ## 2. Run the Container
 ```Powershell Terminal
-docker run -d -p 80:80 myblazorapp:latest
+docker run -d -p 8080:8080 myblazorapp:latest
 ```
 
 ## 3. Verify the Container is Running
