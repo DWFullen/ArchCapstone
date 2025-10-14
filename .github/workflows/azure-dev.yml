@@ -147,26 +147,9 @@ jobs:
             --federated-credential-provider "github" `
             --tenant-id "$Env:AZURE_TENANT_ID"
         shell: pwsh
-      - name: Ensure environment context and optional provision
-        run: |
-          echo "ENVIRONMENT_NAME=$Env:ENVIRONMENT_NAME" >> $env:GITHUB_ENV
-          if ($env:AZD_INITIAL_ENVIRONMENT_CONFIG) {
-            Write-Host "Applying initial env config via azd provision"
-            azd provision --no-prompt
-          } else {
-            Write-Host "No AZD_INITIAL_ENVIRONMENT_CONFIG supplied; skipping azd provision"
-          }
-        env:
-          AZD_INITIAL_ENVIRONMENT_CONFIG: ${{ secrets.AZD_INITIAL_ENVIRONMENT_CONFIG }}
-          ENVIRONMENT_NAME: ${{ vars.AZURE_DEV_ENVIRONMENT_NAME }}
-          environmentName: ${{ vars.AZURE_DEV_ENVIRONMENT_NAME }}
-          BTCPAY_API_ID: ${{ secrets.BTCPAY_API_ID }}
-          BTCPAY_API_KEY: ${{ secrets.BTCPAY_API_KEY }}
-        shell: pwsh
       - name: Set AZURE_RESOURCE_GROUP
         run: |
-          echo "AZURE_RESOURCE_GROUP=${{ env.AZURE_Z_LOCATION }}-${{ env.AZURE_SUBSCRIPTION }}-${{ env.APPLICATION_NAME }}-${{ env.ENVIRONMENT_NAME }}-${{ env.APPLICATION_VERSION }}-rg" >> $GITHUB_ENV
-        shell: pwsh
+          echo "AZURE_RESOURCE_GROUP=${AZURE_Z_LOCATION}-${AZURE_SUBSCRIPTION}-${APPLICATION_NAME}-${ENVIRONMENT_NAME}-${APPLICATION_VERSION}-rg" >> $GITHUB_ENV
       - name: Deploy Application
         run: azd deploy --no-prompt
         env:
