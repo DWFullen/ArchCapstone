@@ -124,9 +124,6 @@ var myBlazorAppEnv = map(filter(myBlazorAppAppSettingsArray, i => i.?secret == n
 @description('Port the Container App should route traffic to (must match container listen port).')
 param containerAppTargetport int = 80
 
-@description('Full container image reference for my-blazor-app (e.g., myregistry.azurecr.io/myblazorapp:tag). If empty, falls back to last deployed image or a default sample image.')
-param myBlazorAppContainerImage string = ''
-
 module myBlazorApp 'br/public:avm/res/app/container-app:0.8.0' = {
   name: '${zLocation}-${azureSubscription}-${applicationName}-${devEnvironmentName}-${applicationVersion}-${abbrs.appContainerApps}'
   params: {
@@ -145,9 +142,7 @@ module myBlazorApp 'br/public:avm/res/app/container-app:0.8.0' = {
     }
     containers: [
       {
-        image: !empty(myBlazorAppContainerImage)
-          ? myBlazorAppContainerImage
-          : (myBlazorAppFetchLatestImage.outputs.?containers[?0].?image ?? 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest')
+        image: myBlazorAppFetchLatestImage.outputs.?containers[?0].?image ?? 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
         name: 'main'
         resources: {
           cpu: json('0.5')
