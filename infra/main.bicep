@@ -29,6 +29,9 @@ param myBlazorAppExists bool
 @secure()
 param myBlazorAppDefinition object
 
+@description('Optional override for the my-blazor-app container image (e.g., myregistry.azurecr.io/myblazorapp:tag). When empty, defaults are used.')
+param myBlazorAppContainerImage string = ''
+
 @description('BTCPay API ID')
 param BTCPAY_API_ID string
 
@@ -69,6 +72,7 @@ module resources 'resources.bicep' = {
     tags: tags
     myBlazorAppExists: myBlazorAppExists
     myBlazorAppDefinition: myBlazorAppDefinition
+    myBlazorAppContainerImage: myBlazorAppContainerImage
     applicationName: applicationName
     applicationVersion: applicationVersion
     azureSubscription: azureSubscription

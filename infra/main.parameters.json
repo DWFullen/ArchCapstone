@@ -63,6 +63,9 @@
       "BTCPAY_API_KEY": {
         "value": "${BTCPAY_API_KEY}"
       },
+      "myBlazorAppContainerImage": {
+        "value": "${SERVICE_MY_BLAZOR_APP_IMAGE_NAME}"
+      },
       "deployFrontDoor": {
         "value": "${DEPLOY_FRONT_DOOR=false}"
       }
