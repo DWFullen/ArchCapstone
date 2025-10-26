@@ -49,3 +49,6 @@ To securely connect your Azure Container Apps to a BTCPayServer instance hosted 
 - **Virtual Network Integration:** Integrate your Container Apps Environment with a custom virtual network for secure, private communication.
 - **IP Security Restrictions:** Configure IP restrictions on BTCPayServer to only allow traffic from your Azure Container Apps (requires a static IP on LunaNode).
 - **Web Application Firewall (WAF):** Use Azure Application Gateway with WAF for public endpoints to protect against common web vulnerabilities.
+
+
+https://github.com/btcpayserver/btcpayserver-doc/blob/master/docs/Development/GreenFieldExample.md

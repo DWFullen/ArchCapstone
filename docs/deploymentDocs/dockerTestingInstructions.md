@@ -23,7 +23,7 @@ docker logs <container_id>
 *Get `<container_id>` from the output of `docker ps`.*
 
 ## 5. Access the Application
-Open your browser and go to: [http://localhost:80](http://localhost:80)
+Open your browser and go to: [http://localhost:8080](http://localhost:8080)
 
 ## 6. Stop the Container After Testing
 ```Powershell Terminal
