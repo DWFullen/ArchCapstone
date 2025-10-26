@@ -1,0 +1,50 @@
+/* Scoped styles for Shop.razor BTCPay modal */
+.btcpay-modal-backdrop[b-3bug0j0kz4] {
+  position: fixed;
+  inset: 0; /* top:0; right:0; bottom:0; left:0 */
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.btcpay-modal[b-3bug0j0kz4] {
+  background: #fff;
+  border-radius: 8px;
+  width: 92%;
+  max-width: 1100px;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  position: relative;
+}
+
+.btcpay-modal .close[b-3bug0j0kz4] {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+.btcpay-iframe[b-3bug0j0kz4] {
+  display: block;
+  width: 100%;
+  height: 80vh;
+  border: 0;
+}
+
+/* Small screens: make modal fill more of the viewport */
+@media (max-width: 480px) {
+  .btcpay-modal[b-3bug0j0kz4] {
+    width: 98%;
+    height: 96vh;
+    border-radius: 6px;
+  }
+  .btcpay-iframe[b-3bug0j0kz4] { height: 86vh; }
+}

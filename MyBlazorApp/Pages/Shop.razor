@@ -4,6 +4,8 @@
 
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
+@using System.Text.Json
+@using System.Net.Http.Json
 
 
 <h1>Hello, shop!</h1>
@@ -25,7 +27,7 @@
 
 @code {
   bool showModal = false;
-  string invoiceUrl;
+  string? invoiceUrl = null;
 
   async Task StartCheckout()
   {
@@ -33,10 +35,26 @@
     var resp = await Http.PostAsJsonAsync("/api/payments/create-invoice", req);
     if (resp.IsSuccessStatusCode)
     {
-      var obj = await resp.Content.ReadFromJsonAsync<JsonElement>();
-      invoiceUrl = obj.GetProperty("checkoutUrl").GetString();
-      showModal = true;
-      StateHasChanged();
+      var body = await resp.Content.ReadAsStringAsync();
+      try
+      {
+        using var doc = JsonDocument.Parse(body);
+        var root = doc.RootElement;
+        if (root.TryGetProperty("checkoutUrl", out var cu)) invoiceUrl = cu.GetString();
+        else if (root.TryGetProperty("data", out var data) && data.TryGetProperty("checkoutLink", out var cl)) invoiceUrl = cl.GetString();
+        else if (root.TryGetProperty("data", out data) && data.TryGetProperty("url", out var u)) invoiceUrl = u.GetString();
+      }
+      catch
+      {
+        // ignore parse errors - handle as generic failure below
+        invoiceUrl = null;
+      }
+
+      if (!string.IsNullOrWhiteSpace(invoiceUrl))
+      {
+        showModal = true;
+        StateHasChanged();
+      }
     }
     else
     {
