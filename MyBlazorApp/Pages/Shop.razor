@@ -9,5 +9,56 @@
 <script src="https://btcpay263134.lndyn.com/modal/btcpay.js"></script>
 
 
+ <!--Show the BTCPay modal and listen to events sent by BTCPay server. -->
+ <script>
+
+	var showBTCPayModal = function(data) {
+		//console.log('Triggered showBTCPayModal()');
+
+		if (data.invoiceId !== undefined) {
+			window.btcpay.setApiUrlPrefix(BTCPayWP.apiUrl);
+			window.btcpay.showInvoice(data.invoiceId);
+		}
+		let invoice_paid = false;
+		window.btcpay.onModalReceiveMessage(function (event) {
+			if (isObject(event.data)) {
+				//console.log('BTCPay modal event: invoiceId: ' + event.data.invoiceId);
+				//console.log('BTCPay modal event: status: ' + event.data.status);
+				if (event.data.status) {
+					switch (event.data.status.toLowerCase()) {
+						case 'complete':
+						case 'paid':
+						case 'processing':
+						case 'settled':
+							invoice_paid = true;
+							setTimeout(function() {
+								window.location = data.orderCompleteLink;
+							}, 3000);
+							break;
+						case 'expired':
+							window.btcpay.hideFrame();
+							submitError(BTCPayWP.textInvoiceExpired);
+							break;
+						case 'invalid':
+							window.btcpay.hideFrame();
+							submitError(BTCPayWP.textInvoiceInvalid);
+							break;
+					}
+				}
+			} else { // handle event.data "loaded" "closed"
+				if (event.data === 'close') {
+					if (invoice_paid === true) {
+						window.location = data.orderCompleteLink;
+					}
+					submitError(BTCPayWP.textModalClosed);
+				}
+			}
+		});
+		const isObject = obj => {
+			return Object.prototype.toString.call(obj) === '[object Object]'
+		}
+	}
+<script>
+
 Welcome to your new app.
 
