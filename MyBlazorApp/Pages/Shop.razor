@@ -2,63 +2,54 @@
 
 <PageTitle>Shop</PageTitle>
 
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
 
 <h1>Hello, shop!</h1>
 
 <!-- Load the btcpay.js script from your BTCPay instance -->
 <script src="https://btcpay263134.lndyn.com/modal/btcpay.js"></script>
 
+<button class="btn btn-primary" @onclick="StartCheckout">Pay with BTCPay</button>
 
- <!--Show the BTCPay modal and listen to events sent by BTCPay server. -->
- <!-- <script>
+@if (showModal)
+{
+  <div class="btcpay-modal-backdrop" @onclick="Close" role="presentation">
+    <div class="btcpay-modal" @onclick:stopPropagation role="dialog" aria-modal="true" tabindex="-1">
+      <button class="close" @onclick="Close" aria-label="Close payment dialog">×</button>
+      <iframe src="@invoiceUrl" title="BTCPay checkout" class="btcpay-iframe"></iframe>
+    </div>
+  </div>
+}
 
-	var showBTCPayModal = function(data) {
-		//console.log('Triggered showBTCPayModal()');
+@code {
+  bool showModal = false;
+  string invoiceUrl;
 
-		if (data.invoiceId !== undefined) {
-			window.btcpay.setApiUrlPrefix(BTCPayWP.apiUrl);
-			window.btcpay.showInvoice(data.invoiceId);
-		}
-		let invoice_paid = false;
-		window.btcpay.onModalReceiveMessage(function (event) {
-			if (isObject(event.data)) {
-				//console.log('BTCPay modal event: invoiceId: ' + event.data.invoiceId);
-				//console.log('BTCPay modal event: status: ' + event.data.status);
-				if (event.data.status) {
-					switch (event.data.status.toLowerCase()) {
-						case 'complete':
-						case 'paid':
-						case 'processing':
-						case 'settled':
-							invoice_paid = true;
-							setTimeout(function() {
-								window.location = data.orderCompleteLink;
-							}, 3000);
-							break;
-						case 'expired':
-							window.btcpay.hideFrame();
-							submitError(BTCPayWP.textInvoiceExpired);
-							break;
-						case 'invalid':
-							window.btcpay.hideFrame();
-							submitError(BTCPayWP.textInvoiceInvalid);
-							break;
-					}
-				}
-			} else { // handle event.data "loaded" "closed"
-				if (event.data === 'close') {
-					if (invoice_paid === true) {
-						window.location = data.orderCompleteLink;
-					}
-					submitError(BTCPayWP.textModalClosed);
-				}
-			}
-		});
-		const isObject = obj => {
-			return Object.prototype.toString.call(obj) === '[object Object]'
-		}
-	}
-<script>
--->
+  async Task StartCheckout()
+  {
+    var req = new { Amount = 12.34m, Currency = "USD", OrderId = "ORD-123", ReturnUrl = NavigationManager.Uri };
+    var resp = await Http.PostAsJsonAsync("/api/payments/create-invoice", req);
+    if (resp.IsSuccessStatusCode)
+    {
+      var obj = await resp.Content.ReadFromJsonAsync<JsonElement>();
+      invoiceUrl = obj.GetProperty("checkoutUrl").GetString();
+      showModal = true;
+      StateHasChanged();
+    }
+    else
+    {
+      // handle error
+    }
+  }
+
+  void Close()
+  {
+    showModal = false;
+    invoiceUrl = null;
+  }
+}
+
 Welcome to your new app.
 
