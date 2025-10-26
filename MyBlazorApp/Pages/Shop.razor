@@ -6,6 +6,7 @@
 @inject NavigationManager NavigationManager
 @using System.Text.Json
 @using System.Net.Http.Json
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 
 
 <h1>Hello, shop!</h1>
@@ -31,8 +32,14 @@
 
   async Task StartCheckout()
   {
-    var req = new { Amount = 12.34m, Currency = "USD", OrderId = "ORD-123", ReturnUrl = NavigationManager.Uri };
-    var resp = await Http.PostAsJsonAsync("/api/payments/create-invoice", req);
+  var req = new { Amount = 12.34m, Currency = "USD", OrderId = "ORD-123", ReturnUrl = NavigationManager.Uri };
+
+  // Resolve API base from configuration. Set PAYMENT_API_BASE in wwwroot/appsettings.json or at build time.
+  var apiBase = Configuration["PAYMENT_API_BASE"];
+  if (string.IsNullOrWhiteSpace(apiBase)) apiBase = "/api"; // default to same-origin API
+  var endpoint = apiBase.TrimEnd('/') + "/payments/create-invoice";
+
+  var resp = await Http.PostAsJsonAsync(endpoint, req);
     if (resp.IsSuccessStatusCode)
     {
       var body = await resp.Content.ReadAsStringAsync();
