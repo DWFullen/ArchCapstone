@@ -4,6 +4,8 @@ build_property.EnableSingleFileAnalyzer =
 build_property.EnableTrimAnalyzer = false
 build_property.IncludeAllContentForSelfExtract = 
 build_property.TargetFramework = net8.0
+build_property.TargetFrameworkIdentifier = .NETCoreApp
+build_property.TargetFrameworkVersion = v8.0
 build_property.TargetPlatformMinVersion = 
 build_property.UsingMicrosoftNETSdkWeb = 
 build_property.ProjectTypeGuids = 
@@ -13,53 +15,53 @@ build_property.EnforceExtendedAnalyzerRules =
 build_property._SupportedPlatformList = browser
 build_property.RootNamespace = MyBlazorApp
 build_property.RootNamespace = MyBlazorApp
-build_property.ProjectDir = F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp\
+build_property.ProjectDir = /home/runner/work/ArchCapstone/ArchCapstone/MyBlazorApp/
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = false
 build_property.RazorLangVersion = 8.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = F:\Documents\GettingGood\Azure Projects\ArchCapstone\MyBlazorApp
+build_property.MSBuildProjectDirectory = /home/runner/work/ArchCapstone/ArchCapstone/MyBlazorApp
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 8.0
 build_property.EnableCodeStyleSeverity = 
 
-[F:/Documents/GettingGood/Azure Projects/ArchCapstone/MyBlazorApp/App.razor]
+[/home/runner/work/ArchCapstone/ArchCapstone/MyBlazorApp/App.razor]
 build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Documents/GettingGood/Azure Projects/ArchCapstone/MyBlazorApp/Pages/Containers/ContainerDetail.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ29udGFpbmVyc1xDb250YWluZXJEZXRhaWwucmF6b3I=
+[/home/runner/work/ArchCapstone/ArchCapstone/MyBlazorApp/Pages/Containers/ContainerDetail.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvQ29udGFpbmVycy9Db250YWluZXJEZXRhaWwucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Documents/GettingGood/Azure Projects/ArchCapstone/MyBlazorApp/Pages/Containers/ContainerList.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ29udGFpbmVyc1xDb250YWluZXJMaXN0LnJhem9y
+[/home/runner/work/ArchCapstone/ArchCapstone/MyBlazorApp/Pages/Containers/ContainerList.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvQ29udGFpbmVycy9Db250YWluZXJMaXN0LnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Documents/GettingGood/Azure Projects/ArchCapstone/MyBlazorApp/Pages/Home.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSG9tZS5yYXpvcg==
+[/home/runner/work/ArchCapstone/ArchCapstone/MyBlazorApp/Pages/Home.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvSG9tZS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Documents/GettingGood/Azure Projects/ArchCapstone/MyBlazorApp/Pages/Shop.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2hvcC5yYXpvcg==
+[/home/runner/work/ArchCapstone/ArchCapstone/MyBlazorApp/Pages/Weather.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvV2VhdGhlci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Documents/GettingGood/Azure Projects/ArchCapstone/MyBlazorApp/Pages/Weather.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcV2VhdGhlci5yYXpvcg==
+[/home/runner/work/ArchCapstone/ArchCapstone/MyBlazorApp/Shared/NavMenu.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkL05hdk1lbnUucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Documents/GettingGood/Azure Projects/ArchCapstone/MyBlazorApp/Shared/NavMenu.razor]
-build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE5hdk1lbnUucmF6b3I=
-build_metadata.AdditionalFiles.CssScope = 
-
-[F:/Documents/GettingGood/Azure Projects/ArchCapstone/MyBlazorApp/_Imports.razor]
+[/home/runner/work/ArchCapstone/ArchCapstone/MyBlazorApp/_Imports.razor]
 build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[F:/Documents/GettingGood/Azure Projects/ArchCapstone/MyBlazorApp/Layout/MainLayout.razor]
-build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XE1haW5MYXlvdXQucmF6b3I=
-build_metadata.AdditionalFiles.CssScope = b-pv57ownmzj
+[/home/runner/work/ArchCapstone/ArchCapstone/MyBlazorApp/Layout/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0L01haW5MYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-uwjohrdo2z
 
-[F:/Documents/GettingGood/Azure Projects/ArchCapstone/MyBlazorApp/Layout/NavMenu.razor]
-build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XE5hdk1lbnUucmF6b3I=
-build_metadata.AdditionalFiles.CssScope = b-soj9rbgjfe
+[/home/runner/work/ArchCapstone/ArchCapstone/MyBlazorApp/Layout/NavMenu.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0L05hdk1lbnUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-j073ci6hee
+
+[/home/runner/work/ArchCapstone/ArchCapstone/MyBlazorApp/Pages/Shop.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXMvU2hvcC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-j49zvjmts6

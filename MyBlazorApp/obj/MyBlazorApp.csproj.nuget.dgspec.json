@@ -1,31 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "F:\\Documents\\GettingGood\\Azure Projects\\ArchCapstone\\MyBlazorApp\\MyBlazorApp.csproj": {}
+    "/home/runner/work/ArchCapstone/ArchCapstone/MyBlazorApp/MyBlazorApp.csproj": {}
   },
   "projects": {
-    "F:\\Documents\\GettingGood\\Azure Projects\\ArchCapstone\\MyBlazorApp\\MyBlazorApp.csproj": {
+    "/home/runner/work/ArchCapstone/ArchCapstone/MyBlazorApp/MyBlazorApp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\Documents\\GettingGood\\Azure Projects\\ArchCapstone\\MyBlazorApp\\MyBlazorApp.csproj",
+        "projectUniqueName": "/home/runner/work/ArchCapstone/ArchCapstone/MyBlazorApp/MyBlazorApp.csproj",
         "projectName": "MyBlazorApp",
-        "projectPath": "F:\\Documents\\GettingGood\\Azure Projects\\ArchCapstone\\MyBlazorApp\\MyBlazorApp.csproj",
-        "packagesPath": "C:\\Users\\Doug\\.nuget\\packages\\",
-        "outputPath": "F:\\Documents\\GettingGood\\Azure Projects\\ArchCapstone\\MyBlazorApp\\obj\\",
+        "projectPath": "/home/runner/work/ArchCapstone/ArchCapstone/MyBlazorApp/MyBlazorApp.csproj",
+        "packagesPath": "/home/runner/.nuget/packages/",
+        "outputPath": "/home/runner/work/ArchCapstone/ArchCapstone/MyBlazorApp/obj/",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\Doug\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/home/runner/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -44,7 +38,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
         "net8.0": {
@@ -78,13 +72,13 @@
             "Microsoft.NET.ILLink.Tasks": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[8.0.21, )",
+              "version": "[8.0.23, )",
               "autoReferenced": true
             },
             "Microsoft.NET.Sdk.WebAssembly.Pack": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[9.0.10, )",
+              "version": "[10.0.2, )",
               "autoReferenced": true
             }
           },
@@ -101,8 +95,16 @@
           "warn": true,
           "downloadDependencies": [
             {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[8.0.23, 8.0.23]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[8.0.23, 8.0.23]"
+            },
+            {
               "name": "Microsoft.NETCore.App.Runtime.Mono.browser-wasm",
-              "version": "[8.0.21, 8.0.21]"
+              "version": "[8.0.23, 8.0.23]"
             }
           ],
           "frameworkReferences": {
@@ -110,7 +112,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "c:\\program files\\dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/10.0.102/PortableRuntimeIdentifierGraph.json"
         }
       },
       "runtimes": {
