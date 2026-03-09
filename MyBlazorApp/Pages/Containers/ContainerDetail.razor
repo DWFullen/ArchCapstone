@@ -1,0 +1,50 @@
+@page "/containers/{containerName}"
+@using MyBlazorApp.Services
+@inject IContainerRegistryService ContainerService
+@inject NavigationManager Navigation
+
+<div class="container mt-4">
+    @if (_container == null)
+    {
+            <p>Loading...</p>
+    }
+    else
+    {
+            <h2>@_container.RowKey</h2>
+            <div class="card">
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">Image Reference</dt>
+                        <dd class="col-sm-9">@_container.ImageReference</dd>
+
+                        <dt class="col-sm-3">Status</dt>
+                        <dd class="col-sm-9">@_container.ApprovalStatus</dd>
+
+                        <dt class="col-sm-3">Created</dt>
+                        <dd class="col-sm-9">@_container.CreatedDate.ToString("g")</dd>
+
+                        <dt class="col-sm-3">Last Accessed</dt>
+                        <dd class="col-sm-9">@_container.LastAccessed.ToString("g")</dd>
+
+                        <dt class="col-sm-3">Tags</dt>
+                        <dd class="col-sm-9">@_container.Tags</dd>
+                    </dl>
+                </div>
+            </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string? ContainerName { get; set; }
+
+    private ContainerMetadata? _container;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (ContainerName != null)
+        {
+            _container = await ContainerService.GetContainerAsync("approved", ContainerName);
+        }
+    }
+}

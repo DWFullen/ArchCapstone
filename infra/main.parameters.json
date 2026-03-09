@@ -3,6 +3,9 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
       "environmentName": {
+        "value": "${ENVIRONMENT_NAME}"
+      },
+       "azdEnvName": {
         "value": "${AZURE_ENV_NAME}"
       },
       "location": {
@@ -34,13 +37,13 @@
         "value": "${AZURE_PRINCIPAL_ID}"
       },
       "devEnvironmentName": {
-        "value": "${AZURE_DEV_ENVIRONMENT_NAME}"
+        "value": "${ENVIRONMENT_NAME}"
       },
       "uatEnvironmentName": {
-        "value": "${AZURE_UAT_ENVIRONMENT_NAME}"
+        "value": "${ENVIRONMENT_NAME}"
       },
       "prodEnvironmentName": {
-        "value": "${AZURE_PROD_ENVIRONMENT_NAME}"
+        "value": "${ENVIRONMENT_NAME}"
       },
       "zLocation": {
         "value": "${AZURE_Z_LOCATION}"

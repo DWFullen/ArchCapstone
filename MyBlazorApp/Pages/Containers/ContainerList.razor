@@ -1,0 +1,101 @@
+@page "/containers"
+@using MyBlazorApp.Services
+@using MyBlazorApp.Models
+@inject IContainerRegistryService ContainerService
+@inject NavigationManager Navigation
+
+<div class="container mt-4">
+    <h3>Container List</h3>
+
+    @if (_isLoading)
+    {
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    }
+    else if (_errorMessage != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            @_errorMessage
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Status</th>
+                        <th>Last Updated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (_containers != null)
+                    {
+                        @foreach (var container in _containers)
+                        {
+                            <tr>
+                                <td>@container.RowKey</td>
+                                <td>
+                                    <span class="badge @GetStatusBadgeClass(container.ApprovalStatus)">
+                                        @container.ApprovalStatus
+                                    </span>
+                                </td>
+                                <td>@container.LastAccessed.ToString("g")</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary" @onclick="() => NavigateToDetails(container.RowKey)">
+                                        Details
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    private IEnumerable<MyBlazorApp.Models.ContainerMetadata>? _containers;
+    private bool _isLoading;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _isLoading = true;
+            await LoadContainers();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error loading containers: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task LoadContainers()
+    {
+        var result = await ContainerService.ListContainersAsync("approved");
+        _containers = result.Cast<MyBlazorApp.Models.ContainerMetadata>();
+    }
+
+    private string GetStatusBadgeClass(string status) => status switch
+    {
+        "Approved" => "bg-success",
+        "Pending" => "bg-warning",
+        "Rejected" => "bg-danger",
+        _ => "bg-secondary"
+    };
+
+    private void NavigateToDetails(string containerName)
+    {
+        Navigation.NavigateTo($"/containers/{containerName}");
+    }
+}
