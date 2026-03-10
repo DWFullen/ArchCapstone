@@ -4,3 +4,11 @@ readme2.txt
 troubleshootingnotes.md
 designReferences.md
 /lunaNode
+
+# Build output
+bin/
+obj/
+*.user
+*.suo
+.vs/
+Copilot-Processing.md
