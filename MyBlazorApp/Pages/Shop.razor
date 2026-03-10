@@ -2,16 +2,38 @@
 
 <PageTitle>Shop</PageTitle>
 
+@* -------------------------------------------------------------------------
+   Dependency injection
+   -------------------------------------------------------------------------
+   IBTCPayService (new) replaces the previous inline HttpClient usage.
+   Injecting the interface instead of the concrete class keeps the component
+   decoupled from the implementation and makes it easy to swap in a mock
+   during testing.
+
+   NavigationManager is used to pass the current page URL as the "return URL"
+   so BTCPay can redirect the customer back here after payment.
+   ------------------------------------------------------------------------- *@
 @inject IBTCPayService BTCPay
 @inject NavigationManager NavigationManager
 @using MyBlazorApp.Models
 @using MyBlazorApp.Services
+
+@* @implements IDisposable is required because the @code block creates a
+   System.Threading.Timer for status polling. Without implementing IDisposable
+   the timer would keep firing even after Blazor tears down the component,
+   causing ObjectDisposedExceptions and memory leaks. *@
 @implements IDisposable
 
 <h1>Shop</h1>
 
 <p>Select an item and pay securely with Bitcoin via BTCPay Server.</p>
 
+@* -------------------------------------------------------------------------
+   Product card
+   The pay button is disabled while a checkout is in progress (isBusy = true)
+   to prevent the user from accidentally creating multiple invoices.
+   The spinner replaces the button text while the API call is pending.
+   ------------------------------------------------------------------------- *@
 <div class="shop-items">
     <div class="shop-card">
         <h4>Rebel Merch</h4>
@@ -19,6 +41,7 @@
         <button class="btn btn-primary" @onclick='() => StartCheckout(12.34m, "USD", "ORD-123")' disabled="@isBusy">
             @if (isBusy)
             {
+                @* Bootstrap 5 spinner — visible only while the invoice is being created *@
                 <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                 <span>Processing…</span>
             }
@@ -30,11 +53,26 @@
     </div>
 </div>
 
+@* -------------------------------------------------------------------------
+   Error banner
+   Shown when CreateInvoiceAsync returns null or throws (e.g. PaymentsApi is
+   unreachable, or BTCPay rejects the request).
+   ------------------------------------------------------------------------- *@
 @if (!string.IsNullOrWhiteSpace(errorMessage))
 {
     <div class="alert alert-danger mt-3" role="alert">@errorMessage</div>
 }
 
+@* -------------------------------------------------------------------------
+   Checkout modal
+   Displayed after a successful invoice creation. The BTCPay checkout page is
+   loaded inside an <iframe> so the user never leaves our site.
+
+   Clicking the backdrop or the × button calls Close(), which stops the poll
+   timer and hides the modal.  @onclick:stopPropagation on the inner div
+   prevents a click inside the modal from bubbling up and closing it
+   accidentally.
+   ------------------------------------------------------------------------- *@
 @if (showModal && !string.IsNullOrWhiteSpace(invoiceUrl))
 {
     <div class="btcpay-modal-backdrop" @onclick="Close" role="presentation">
@@ -45,6 +83,14 @@
     </div>
 }
 
+@* -------------------------------------------------------------------------
+   Payment status banner
+   Shown (below the modal) once the poll timer receives a terminal status from
+   PaymentsApi. The alert colour changes depending on the outcome:
+     green  (alert-success) — payment confirmed or processing
+     yellow (alert-warning) — invoice expired or invalidated
+     blue   (alert-info)    — any other in-progress status
+   ------------------------------------------------------------------------- *@
 @if (paymentStatus is not null)
 {
     <div class="alert @(paymentStatus.IsPaid ? "alert-success" : paymentStatus.IsExpiredOrInvalid ? "alert-warning" : "alert-info") mt-3" role="alert">
@@ -70,23 +116,54 @@
 }
 
 @code {
+    // -------------------------------------------------------------------------
+    // State fields
+    // -------------------------------------------------------------------------
+
+    // True while the create-invoice API call is in flight; disables the button.
     bool isBusy = false;
+
+    // Controls visibility of the BTCPay checkout iframe modal.
     bool showModal = false;
+
+    // The BTCPay-hosted checkout URL loaded inside the modal iframe.
     string? invoiceUrl = null;
+
+    // The BTCPay invoice id returned by PaymentsApi; used by the poll loop.
     string? currentInvoiceId = null;
+
+    // Human-readable error surfaced to the user when something goes wrong.
     string? errorMessage = null;
+
+    // The latest status fetched by the poll loop; drives the status banner.
     InvoiceStatusResult? paymentStatus = null;
+
+    // Fires PollStatusAsync every 5 s while the modal is open.
+    // Null when no invoice is active or polling has stopped.
     System.Threading.Timer? _pollTimer;
 
+    // -------------------------------------------------------------------------
+    // StartCheckout
+    //
+    // Called when the user clicks "Pay with Bitcoin".  It:
+    //   1. Sets isBusy = true to disable the button and show a spinner.
+    //   2. Asks BTCPayService to create an invoice via PaymentsApi.
+    //   3. If successful, stores the checkout URL, opens the modal, and starts
+    //      the status poll timer.
+    //   4. If unsuccessful, sets errorMessage for the error banner.
+    //   5. Always resets isBusy in the finally block.
+    // -------------------------------------------------------------------------
     async Task StartCheckout(decimal amount, string currency, string orderId)
     {
         isBusy = true;
         errorMessage = null;
         paymentStatus = null;
-        StateHasChanged();
+        StateHasChanged(); // force re-render so the spinner appears immediately
 
         try
         {
+            // Pass NavigationManager.Uri as the return URL so BTCPay can send
+            // the user back to this exact page after completing or cancelling payment.
             var result = await BTCPay.CreateInvoiceAsync(amount, currency, orderId, NavigationManager.Uri);
 
             if (result is null || string.IsNullOrWhiteSpace(result.CheckoutUrl))
@@ -99,8 +176,11 @@
             currentInvoiceId = result.InvoiceId;
             showModal = true;
 
-            // Poll for payment status every 5 seconds while the modal is open
-            _pollTimer?.Dispose();
+            // Start polling for payment status every 5 seconds.
+            // InvokeAsync marshals PollStatusAsync back onto the Blazor synchronisation
+            // context so StateHasChanged() inside it is safe to call from the timer
+            // thread.
+            _pollTimer?.Dispose(); // safety: cancel any previous timer
             _pollTimer = new System.Threading.Timer(_ => InvokeAsync(PollStatusAsync), null,
                 TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
         }
@@ -115,6 +195,17 @@
         }
     }
 
+    // -------------------------------------------------------------------------
+    // PollStatusAsync
+    //
+    // Invoked every 5 seconds by _pollTimer while the modal is open.
+    // Fetches the invoice status from PaymentsApi and:
+    //   • Updates the paymentStatus field (drives the status banner).
+    //   • Stops the timer and closes the modal when a terminal status is reached
+    //     (IsPaid = Settled/Processing, or IsExpiredOrInvalid = Expired/Invalid).
+    //   • Silently swallows transient errors so one failed poll doesn't disrupt
+    //     the user experience.
+    // -------------------------------------------------------------------------
     async Task PollStatusAsync()
     {
         if (currentInvoiceId is null) return;
@@ -122,18 +213,19 @@
         try
         {
             var status = await BTCPay.GetInvoiceStatusAsync(currentInvoiceId);
-            if (status is null) return;
+            if (status is null) return; // transient failure — try again next tick
 
             paymentStatus = status;
 
+            // Stop polling when the invoice has reached a terminal state.
             if (status.IsPaid || status.IsExpiredOrInvalid)
             {
                 _pollTimer?.Dispose();
                 _pollTimer = null;
-                showModal = false;
+                showModal = false; // close the iframe modal automatically
             }
 
-            StateHasChanged();
+            StateHasChanged(); // update the status banner
         }
         catch
         {
@@ -141,6 +233,12 @@
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Close
+    //
+    // Called when the user clicks the × button or the modal backdrop.
+    // Stops the poll timer to prevent ghost requests after the modal is gone.
+    // -------------------------------------------------------------------------
     void Close()
     {
         _pollTimer?.Dispose();
@@ -149,6 +247,14 @@
         invoiceUrl = null;
     }
 
+    // -------------------------------------------------------------------------
+    // Dispose (IDisposable)
+    //
+    // Blazor calls Dispose() when the component is removed from the render tree
+    // (e.g. the user navigates away). Disposing _pollTimer here ensures the
+    // background timer thread stops, preventing memory leaks and ObjectDisposed
+    // exceptions on the abandoned component.
+    // -------------------------------------------------------------------------
     public void Dispose()
     {
         _pollTimer?.Dispose();
